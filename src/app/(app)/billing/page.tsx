@@ -35,7 +35,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
           <div>
             <p className="stappli-table-header mb-1">Current plan</p>
             <p className="text-2xl font-bold">
-              {sub?.plan === "PAID" ? "Reportly · $49/mo" : "Trial / Free"}
+              {sub?.plan === "PAID" ? "Reportly · $8/mo" : "Trial / Free"}
             </p>
             {sub?.status === "TRIALING" && (
               <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">

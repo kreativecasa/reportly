@@ -47,7 +47,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user?.id) {
         token.uid = user.id;
       }
-      if (token.uid && !token.plan) {
+      if (token.uid && (!token.plan || !token.emailVerifiedAt)) {
         const sub = await prisma.subscription.findUnique({
           where: { userId: token.uid as string },
           select: { plan: true, trialEnd: true },

@@ -29,7 +29,7 @@ function LoginForm() {
     const res = await signIn("credentials", { email, password, redirect: false });
     setLoading(false);
     if (res?.error) {
-      setError("Invalid email or password");
+      setError("Invalid email or password. Please try again.");
       return;
     }
     router.push(callbackUrl);
@@ -46,13 +46,18 @@ function LoginForm() {
 
   return (
     <div>
-      <h1 className="stappli-title mb-2">Welcome back</h1>
-      <p className="stappli-subtitle mb-8">Log in to your Reportly account.</p>
+      {/* Heading */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome back</h1>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          Your clients are waiting for their next report.
+        </p>
+      </div>
 
       <form onSubmit={onSubmit} className="space-y-5">
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-2">
-            Email
+            Email address
           </label>
           <input
             type="email"
@@ -60,6 +65,7 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="stappli-input"
+            placeholder="you@company.com"
             autoComplete="email"
             autoFocus
           />
@@ -70,7 +76,7 @@ function LoginForm() {
               Password
             </label>
             <Link href="/forgot-password" className="text-xs text-[hsl(var(--primary))] font-medium hover:underline">
-              Forgot?
+              Forgot password?
             </Link>
           </div>
           <div className="relative">
@@ -80,6 +86,7 @@ function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="stappli-input pr-20"
+              placeholder="••••••••"
               autoComplete="current-password"
             />
             <button
@@ -91,22 +98,33 @@ function LoginForm() {
             </button>
           </div>
         </div>
+
         {error && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
             <p className="text-sm text-red-900">{error}</p>
           </div>
         )}
-        <button type="submit" disabled={loading} className="stappli-button-primary w-full">
-          {loading ? "Signing in..." : "Sign in"}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="stappli-button-primary w-full h-12 text-sm"
+        >
+          {loading ? "Signing in…" : "Sign in to Reportly"}
         </button>
       </form>
 
-      <p className="text-sm text-[hsl(var(--muted-foreground))] mt-8 text-center">
-        Don&apos;t have an account?{" "}
-        <Link href="/signup" className="text-[hsl(var(--primary))] font-medium hover:underline">
-          Create one
-        </Link>
-      </p>
+      <div className="mt-8 pt-6 border-t border-[hsl(var(--border))] text-center">
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          Don&apos;t have an account?{" "}
+          <Link href="/signup" className="text-[hsl(var(--primary))] font-bold hover:underline">
+            Start your free trial →
+          </Link>
+        </p>
+        <p className="text-xs text-[hsl(var(--muted-foreground))] mt-2">
+          14 days free · No credit card required
+        </p>
+      </div>
     </div>
   );
 }

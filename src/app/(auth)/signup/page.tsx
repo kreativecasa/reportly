@@ -32,7 +32,6 @@ export default function SignupPage() {
         return;
       }
       if (json.data?.emailSent === false && json.data?.verifyUrl) {
-        // Dev fallback: Resend can't deliver to this address
         setDevVerifyUrl(json.data.verifyUrl);
         return;
       }
@@ -51,26 +50,36 @@ export default function SignupPage() {
 
   return (
     <div>
-      <h1 className="stappli-title mb-2">Create your account</h1>
-      <p className="stappli-subtitle mb-8">Start your 14-day free trial. No credit card required.</p>
+      {/* Heading */}
+      <div className="mb-8">
+        <div className="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1 mb-4">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Free for 14 days</span>
+        </div>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">Start your free trial</h1>
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          Generate your first AI report in under 60 seconds.
+        </p>
+      </div>
 
-      <form onSubmit={onSubmit} className="space-y-5">
+      <form onSubmit={onSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-2">
-            Name <span className="text-[hsl(var(--muted-foreground))] font-normal normal-case tracking-normal">(optional)</span>
+            Your name <span className="font-normal normal-case tracking-normal opacity-60">(optional)</span>
           </label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="stappli-input"
+            placeholder="Jane Smith"
             autoComplete="name"
             autoFocus
           />
         </div>
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-[hsl(var(--muted-foreground))] mb-2">
-            Email
+            Work email
           </label>
           <input
             type="email"
@@ -78,6 +87,7 @@ export default function SignupPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="stappli-input"
+            placeholder="you@company.com"
             autoComplete="email"
           />
         </div>
@@ -93,6 +103,7 @@ export default function SignupPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="stappli-input pr-20"
+              placeholder="Min. 8 characters"
               autoComplete="new-password"
             />
             <button
@@ -103,8 +114,8 @@ export default function SignupPage() {
               {showPassword ? "Hide" : "Show"}
             </button>
           </div>
-          <p className="text-xs text-[hsl(var(--muted-foreground))] mt-2">At least 8 characters</p>
         </div>
+
         {error && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
             <p className="text-sm text-red-900">{error}</p>
@@ -113,28 +124,38 @@ export default function SignupPage() {
         {devVerifyUrl && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
             <p className="text-sm text-amber-900 font-medium mb-2">
-              ✓ Account created. Verification email couldn&apos;t be delivered (Resend free tier).
+              ✓ Account created. Verify your email to continue:
             </p>
-            <p className="text-xs text-amber-900 mb-2">Click to verify this email manually:</p>
-            <a
-              href={devVerifyUrl}
-              className="text-xs text-[hsl(var(--primary))] font-medium hover:underline break-all"
-            >
+            <a href={devVerifyUrl} className="text-xs text-[hsl(var(--primary))] font-medium hover:underline break-all">
               {devVerifyUrl}
             </a>
           </div>
         )}
-        <button type="submit" disabled={loading} className="stappli-button-primary w-full">
-          {loading ? "Creating account..." : "Create account"}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="stappli-button-primary w-full h-12 text-sm"
+        >
+          {loading ? "Creating your account…" : "Create free account →"}
         </button>
+
+        <p className="text-center text-xs text-[hsl(var(--muted-foreground))] pt-1">
+          By signing up you agree to our{" "}
+          <span className="text-[hsl(var(--foreground))] font-medium">Terms of Service</span>
+          {" "}and{" "}
+          <span className="text-[hsl(var(--foreground))] font-medium">Privacy Policy</span>.
+        </p>
       </form>
 
-      <p className="text-sm text-[hsl(var(--muted-foreground))] mt-8 text-center">
-        Already have an account?{" "}
-        <Link href="/login" className="text-[hsl(var(--primary))] font-medium hover:underline">
-          Log in
-        </Link>
-      </p>
+      <div className="mt-8 pt-6 border-t border-[hsl(var(--border))] text-center">
+        <p className="text-sm text-[hsl(var(--muted-foreground))]">
+          Already have an account?{" "}
+          <Link href="/login" className="text-[hsl(var(--primary))] font-bold hover:underline">
+            Sign in
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

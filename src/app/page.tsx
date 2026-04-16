@@ -294,15 +294,98 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── FAQ / SEO content ── */}
+      <section className="stappli-page py-24">
+        <div className="text-center mb-12">
+          <span className="stappli-table-header text-[hsl(var(--primary))]">FAQ</span>
+          <h2 className="mt-3 text-4xl font-bold tracking-tight">Common questions</h2>
+        </div>
+        <div className="max-w-3xl mx-auto divide-y divide-[hsl(var(--border))]">
+          {[
+            {
+              q: "How does Reportly generate reports?",
+              a: "Reportly connects to your Google Analytics 4 account via OAuth. It pulls your traffic, conversion, and engagement data, then sends it to Claude AI which writes a narrative report with insights, wins, concerns, and recommendations — all in plain English your clients can understand.",
+            },
+            {
+              q: "Does Reportly work for freelancers or just agencies?",
+              a: "Both. Whether you manage 1 client or 10, Reportly saves you hours every month. The $8/mo plan is designed to be accessible to solo freelancers while being powerful enough for small agencies.",
+            },
+            {
+              q: "What integrations does Reportly support?",
+              a: "Currently Google Analytics 4 (GA4). We're adding Google Ads, Meta Ads, and Search Console soon. Your clients can see traffic, sessions, conversions, revenue, and engagement metrics all in one branded report.",
+            },
+            {
+              q: "Can I brand the reports with my agency logo?",
+              a: "Yes — you set your brand color and logo in your workspace settings. Every report uses your branding, so clients see your agency name, not Reportly.",
+            },
+            {
+              q: "How do clients receive the report?",
+              a: "Two ways: (1) download a polished PDF and email it yourself, or (2) click 'Send to client' inside Reportly and it emails them directly with a branded link. You can also share a live read-only link.",
+            },
+            {
+              q: "Is there a free trial?",
+              a: "Yes — 14 days free, no credit card required. You get full access to everything including report generation, PDF export, and client sending.",
+            },
+          ].map((faq) => (
+            <div key={faq.q} className="py-6">
+              <h3 className="font-bold text-base mb-2">{faq.q}</h3>
+              <p className="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed">{faq.a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* ── Footer ── */}
-      <footer className="border-t border-[hsl(var(--border))] py-10">
-        <div className="stappli-page flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[hsl(var(--muted-foreground))]">
-          <span className="font-bold text-[hsl(var(--foreground))]">Reportly</span>
-          <div className="flex items-center gap-6">
-            <Link href="/login" className="hover:text-[hsl(var(--foreground))] transition">Log in</Link>
-            <Link href="/signup" className="hover:text-[hsl(var(--foreground))] transition">Sign up</Link>
+      <footer className="bg-[hsl(var(--foreground))] text-white">
+        <div className="stappli-page py-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            {/* Brand column */}
+            <div className="md:col-span-2">
+              <span className="text-xl font-bold">Reportly</span>
+              <p className="mt-3 text-sm text-white/60 leading-relaxed max-w-sm">
+                AI-powered marketing reports for agencies and freelancers. Stop spending hours on reports — start impressing clients in seconds.
+              </p>
+              <div className="mt-6">
+                <Link href="/signup" className="inline-flex items-center justify-center h-10 px-6 rounded-full bg-[hsl(var(--primary))] text-white font-bold uppercase tracking-wider text-xs hover:opacity-90 transition">
+                  Start free trial →
+                </Link>
+              </div>
+              <p className="mt-3 text-xs text-white/40">14-day free trial · No credit card required</p>
+            </div>
+
+            {/* Product links */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-white/40 mb-4">Product</p>
+              <ul className="space-y-3 text-sm text-white/70">
+                <li><a href="#how-it-works" className="hover:text-white transition">How it works</a></li>
+                <li><a href="#features" className="hover:text-white transition">Features</a></li>
+                <li><a href="#pricing" className="hover:text-white transition">Pricing</a></li>
+                <li><Link href="/signup" className="hover:text-white transition">Start free trial</Link></li>
+                <li><Link href="/login" className="hover:text-white transition">Log in</Link></li>
+              </ul>
+            </div>
+
+            {/* Use cases */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-white/40 mb-4">Use cases</p>
+              <ul className="space-y-3 text-sm text-white/70">
+                <li><span>Marketing agencies</span></li>
+                <li><span>Freelance marketers</span></li>
+                <li><span>SEO consultants</span></li>
+                <li><span>PPC managers</span></li>
+                <li><span>Growth hackers</span></li>
+              </ul>
+            </div>
           </div>
-          <span>© {new Date().getFullYear()} Reportly. All rights reserved.</span>
+
+          {/* Divider + bottom bar */}
+          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/40">
+            <span>© {new Date().getFullYear()} Reportly. All rights reserved.</span>
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>All systems operational</span>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

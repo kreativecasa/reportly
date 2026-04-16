@@ -1,0 +1,312 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  emailVerified  DateTime?
+  name           String?
+  avatarUrl      String?
+  hashedPassword String?
+  role           UserRole  @default(USER)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts           Account[]
+  sessions           Session[]
+  subscription       Subscription?
+  workspace          Workspace?
+  passwordResets     PasswordReset[]
+  emailVerifications EmailVerification[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique @default(cuid())
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique @default(cuid())
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// WORKSPACE
+// ─────────────────────────────────────────────
+
+model Workspace {
+  id                  String   @id @default(cuid())
+  ownerId             String   @unique
+  name                String
+  logoUrl             String?
+  brandColor          String   @default("#3B82F6")
+  onboardingCompleted Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  owner       User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  clients     Client[]
+  dataSources DataSource[]
+  reports     Report[]
+}
+
+// ─────────────────────────────────────────────
+// CLIENTS
+// ─────────────────────────────────────────────
+
+model Client {
+  id           String   @id @default(cuid())
+  workspaceId  String
+  name         String
+  contactName  String?
+  contactEmail String?
+  logoUrl      String?
+  industry     String?
+  notes        String?  @db.Text
+  isArchived   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  dataSources DataSource[]
+  reports     Report[]
+}
+
+// ─────────────────────────────────────────────
+// DATA SOURCES
+// ─────────────────────────────────────────────
+
+enum DataSourceType {
+  GOOGLE_ANALYTICS_4
+  GOOGLE_ADS
+  META_ADS
+  GOOGLE_SEARCH_CONSOLE
+  MANUAL_CSV
+}
+
+model DataSource {
+  id             String         @id @default(cuid())
+  workspaceId    String
+  clientId       String?
+  type           DataSourceType
+  name           String
+  externalId     String
+  accessToken    String         @db.Text
+  refreshToken   String?        @db.Text
+  tokenExpiresAt DateTime?
+  scopes         String[]
+  metadata       Json           @default("{}")
+  isActive       Boolean        @default(true)
+  lastSyncedAt   DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  workspace Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  client    Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  reports   ReportDataSource[]
+}
+
+// ─────────────────────────────────────────────
+// REPORTS
+// ─────────────────────────────────────────────
+
+enum ReportStatus {
+  DRAFT
+  GENERATING
+  READY
+  SENT
+  ERROR
+}
+
+model Report {
+  id              String       @id @default(cuid())
+  workspaceId     String
+  clientId        String
+  title           String
+  dateRangeStart  DateTime
+  dateRangeEnd    DateTime
+  status          ReportStatus @default(DRAFT)
+  generationJobId String?
+  errorMessage    String?      @db.Text
+  rawDataSnapshot Json?
+  aiNarrative     String?      @db.Text
+  sections        Json         @default("[]")
+  pdfUrl          String?
+  pdfGeneratedAt  DateTime?
+  sentAt          DateTime?
+  sentToEmail     String?
+  viewCount       Int          @default(0)
+  clientViewToken String       @unique @default(cuid())
+  isArchived      Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  client      Client             @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dataSources ReportDataSource[]
+  activities  ReportActivity[]
+}
+
+model ReportDataSource {
+  id           String @id @default(cuid())
+  reportId     String
+  dataSourceId String
+
+  report     Report     @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  dataSource DataSource @relation(fields: [dataSourceId], references: [id], onDelete: Cascade)
+
+  @@unique([reportId, dataSourceId])
+}
+
+model ReportActivity {
+  id        String   @id @default(cuid())
+  reportId  String
+  type      String
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────
+// SUBSCRIPTION & BILLING (v1: FREE | PAID only)
+// ─────────────────────────────────────────────
+
+enum SubscriptionPlan {
+  FREE
+  PAID
+}
+
+enum SubscriptionStatus {
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  PAUSED
+}
+
+model Subscription {
+  id                     String             @id @default(cuid())
+  userId                 String             @unique
+  gumroadSubscriptionId  String?            @unique
+  gumroadSaleId          String?            @unique
+  gumroadProductId       String?
+  gumroadLicenseKey      String?            @unique
+  plan                   SubscriptionPlan   @default(FREE)
+  status                 SubscriptionStatus @default(INCOMPLETE)
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  cancelAtPeriodEnd      Boolean            @default(false)
+  cancelledAt            DateTime?
+  trialStart             DateTime?
+  trialEnd               DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices Invoice[]
+}
+
+model Invoice {
+  id               String   @id @default(cuid())
+  subscriptionId   String
+  gumroadSaleId    String   @unique
+  amount           Int
+  currency         String   @default("usd")
+  status           String
+  receiptUrl       String?
+  periodStart      DateTime
+  periodEnd        DateTime
+  createdAt        DateTime @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+}
+
+// Idempotency ledger for Gumroad pings (keyed by sale_id or subscription event id)
+model GumroadEvent {
+  id          String   @id
+  resource    String
+  processedAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────
+// USAGE TRACKING
+// ─────────────────────────────────────────────
+
+model UsageRecord {
+  id               String   @id @default(cuid())
+  workspaceId      String
+  month            String
+  reportsGenerated Int      @default(0)
+  pdfsExported     Int      @default(0)
+  emailsSent       Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([workspaceId, month])
+}

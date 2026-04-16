@@ -1,26 +1,123 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+
+  /* Reportly brand override: primary is blue #3475ef (design system md keeps teal for other projects) */
+  --primary: 219 85% 57%;              /* #3475EF blue */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 219 85% 95%;            /* soft blue tint of primary */
+  --secondary-foreground: 219 85% 30%;
+
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
+  --ring: 172 44% 50%;
+
+  --sidebar-background: 168 36% 96%;   /* #F3F9F8 light mint */
+  --sidebar-foreground: 240 10% 3.9%;
+  --sidebar-accent: 168 49% 93%;
+  --sidebar-accent-foreground: 172 44% 25%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Stappli utility classes ─── */
+
+.stappli-input {
+  @apply h-11 w-full rounded-2xl border border-[hsl(var(--border))] bg-white px-4 text-sm
+         text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]
+         focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))] focus:border-transparent transition;
+}
+
+.stappli-search-bar {
+  @apply h-12 rounded-full bg-white px-5 text-sm
+         shadow-inner border border-[hsl(var(--border))]
+         focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))] transition;
+}
+
+.stappli-button-primary {
+  @apply inline-flex items-center justify-center h-11 px-6 rounded-full
+         bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]
+         font-bold uppercase tracking-wider text-xs
+         hover:opacity-90 active:scale-[0.98] transition disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.stappli-button-ghost {
+  @apply inline-flex items-center justify-center h-11 px-6 rounded-full
+         bg-white text-[hsl(var(--foreground))]
+         font-bold uppercase tracking-wider text-xs
+         border border-[hsl(var(--border))]
+         hover:bg-[hsl(var(--muted))] active:scale-[0.98] transition disabled:opacity-50;
+}
+
+.stappli-badge-active {
+  @apply inline-flex items-center h-5 px-2 rounded-full
+         bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-wider;
+}
+
+.stappli-card {
+  @apply bg-white rounded-2xl border border-[hsl(var(--border))] shadow-sm;
+}
+
+.stappli-table-header {
+  @apply text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))];
+}
+
+.stappli-table-row {
+  @apply bg-white hover:bg-[hsl(var(--muted))] transition;
+}
+
+.hover-lift {
+  @apply transition-all hover:-translate-y-0.5 hover:shadow-md;
+}
+
+.stappli-page {
+  @apply max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12;
+}
+
+.stappli-title {
+  @apply text-3xl font-bold text-[hsl(var(--foreground))];
+}
+
+.stappli-subtitle {
+  @apply text-sm text-[hsl(var(--muted-foreground))] font-medium;
 }

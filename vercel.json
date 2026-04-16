@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "src/app/api/inngest/route.ts": {
+      "maxDuration": 300
+    },
+    "src/app/api/reports/[id]/pdf/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  },
+  "env": {
+    "INNGEST_DEV": "0"
+  }
+}

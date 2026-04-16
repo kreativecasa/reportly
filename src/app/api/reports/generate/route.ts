@@ -20,8 +20,12 @@ export async function POST(req: NextRequest) {
     await requireVerifiedEmail();
     const { session, workspace } = await requireWorkspace();
 
-    const { success } = await ratelimit("generateReport").limit(`gen:${session.user.id}`);
-    if (!success) return fail("RATE_LIMITED", "Too many report generations. Try again in an hour.");
+    try {
+      const { success } = await ratelimit("generateReport").limit(`gen:${session.user.id}`);
+      if (!success) return fail("RATE_LIMITED", "Too many report generations. Try again in an hour.");
+    } catch {
+      // Redis unavailable — skip rate limiting rather than blocking generation
+    }
 
     await assertCanGenerateReport(workspace.id, session.user.id);
 

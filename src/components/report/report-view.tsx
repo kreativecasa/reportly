@@ -101,9 +101,9 @@ function Section({ section, brandColor }: { section: ReportSection; brandColor: 
         {section.narrative}
       </div>
 
-      {section.keyMetrics.length > 0 && (
+      {(section.keyMetrics ?? []).length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {section.keyMetrics.map((m, i) => (
+          {(section.keyMetrics ?? []).map((m, i) => (
             <div key={i} className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{m.label}</p>
               <p className="text-2xl font-bold mt-1">{m.value}</p>
@@ -121,9 +121,9 @@ function Section({ section, brandColor }: { section: ReportSection; brandColor: 
 
       {section.chartData && <Chart config={section.chartData} brandColor={brandColor} />}
 
-      {section.insights.length > 0 && (
+      {(section.insights ?? []).length > 0 && (
         <div className="mt-6 space-y-2">
-          {section.insights.map((ins, i) => (
+          {(section.insights ?? []).map((ins, i) => (
             <div
               key={i}
               className={`rounded-xl p-4 text-sm ${

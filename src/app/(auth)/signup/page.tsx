@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import Icon from "@mdi/react";
+import { mdiCheckCircle } from "@mdi/js";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -123,8 +125,9 @@ export default function SignupPage() {
         )}
         {devVerifyUrl && (
           <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <p className="text-sm text-amber-900 font-medium mb-2">
-              ✓ Account created. Verify your email to continue:
+            <p className="text-sm text-amber-900 font-medium mb-2 flex items-center gap-1.5">
+              <Icon path={mdiCheckCircle} size={0.65} />
+              Account created. Verify your email to continue:
             </p>
             <a href={devVerifyUrl} className="text-xs text-[hsl(var(--primary))] font-medium hover:underline break-all">
               {devVerifyUrl}

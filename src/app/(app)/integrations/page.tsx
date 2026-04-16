@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { IntegrationsClient } from "./integrations-client";
+import Icon from "@mdi/react";
+import { mdiCheckCircle } from "@mdi/js";
 
 export default async function IntegrationsPage({
   searchParams,
@@ -32,7 +34,10 @@ export default async function IntegrationsPage({
 
       {connected && (
         <div className="stappli-card p-4 mb-6 border-emerald-200 bg-emerald-50">
-          <p className="text-sm text-emerald-900">✓ Integration connected successfully.</p>
+          <p className="text-sm text-emerald-900 flex items-center gap-1.5">
+            <Icon path={mdiCheckCircle} size={0.65} />
+            Integration connected successfully.
+          </p>
         </div>
       )}
       {error && (

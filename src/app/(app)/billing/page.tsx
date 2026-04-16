@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { format } from "date-fns";
 import { BillingActions } from "./billing-actions";
+import Icon from "@mdi/react";
+import { mdiCheckCircle } from "@mdi/js";
 
 export default async function BillingPage({ searchParams }: { searchParams: Promise<{ success?: string }> }) {
   const session = await requireSession();
@@ -26,7 +28,10 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
 
       {success && (
         <div className="stappli-card p-4 mb-6 border-emerald-200 bg-emerald-50">
-          <p className="text-sm text-emerald-900">✓ You&apos;re now on Reportly paid 🎉</p>
+          <p className="text-sm text-emerald-900 flex items-center gap-1.5">
+            <Icon path={mdiCheckCircle} size={0.65} />
+            You&apos;re now on Reportly paid — welcome aboard.
+          </p>
         </div>
       )}
 

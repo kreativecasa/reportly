@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Icon from "@mdi/react";
+import { mdiCheckCircle } from "@mdi/js";
 
 export function ResendVerificationButton({ email }: { email: string }) {
   const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -21,7 +23,12 @@ export function ResendVerificationButton({ email }: { email: string }) {
   }
 
   if (state === "sent") {
-    return <p className="text-xs font-medium text-amber-900">✓ Verification email sent — check your inbox.</p>;
+    return (
+      <p className="text-xs font-medium text-amber-900 flex items-center gap-1.5">
+        <Icon path={mdiCheckCircle} size={0.6} />
+        Verification email sent — check your inbox.
+      </p>
+    );
   }
 
   return (

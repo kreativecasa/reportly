@@ -5,6 +5,8 @@ import { requireSession } from "@/lib/auth-guard";
 import { format } from "date-fns";
 import { getEffectivePlan, planLimits } from "@/lib/plan-limits";
 import { ResendVerificationButton } from "./resend-verification-button";
+import Icon from "@mdi/react";
+import { mdiHandWave, mdiAlertCircle, mdiAutoFix, mdiPlus, mdiFlash, mdiFileDocument } from "@mdi/js";
 
 export default async function DashboardPage() {
   const session = await requireSession();
@@ -38,7 +40,10 @@ export default async function DashboardPage() {
           <p className="text-xs font-bold uppercase tracking-widest text-[hsl(var(--muted-foreground))] mb-1">
             {workspace.name}
           </p>
-          <h1 className="text-2xl font-bold tracking-tight">Welcome back, {firstName} 👋</h1>
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+            Welcome back, {firstName}
+            <Icon path={mdiHandWave} size={0.85} className="text-[hsl(var(--primary))]" />
+          </h1>
           <p className="text-sm text-[hsl(var(--muted-foreground))] mt-1">
             Here&apos;s an overview of your workspace.
           </p>
@@ -52,7 +57,9 @@ export default async function DashboardPage() {
       {!session.user.emailVerifiedAt && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <span className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 text-sm flex-shrink-0">⚠</span>
+            <span className="h-8 w-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 flex-shrink-0">
+              <Icon path={mdiAlertCircle} size={0.75} />
+            </span>
             <div>
               <p className="text-sm font-bold text-amber-900">Verify your email to generate reports</p>
               <p className="text-xs text-amber-700 mt-0.5">Check your inbox for the verification link.</p>
@@ -117,7 +124,7 @@ export default async function DashboardPage() {
               href: "/reports/new",
               label: "Generate a report",
               desc: "AI writes the narrative in 60 seconds",
-              icon: "✦",
+              icon: <Icon path={mdiAutoFix} size={0.8} />,
               accent: "bg-[hsl(var(--primary))/0.06] border-[hsl(var(--primary))/0.15] hover:bg-[hsl(var(--primary))/0.1]",
               iconBg: "bg-[hsl(var(--primary))/0.1] text-[hsl(var(--primary))]",
             },
@@ -125,7 +132,7 @@ export default async function DashboardPage() {
               href: "/clients/new",
               label: "Add a client",
               desc: "Set up a new client workspace",
-              icon: "+",
+              icon: <Icon path={mdiPlus} size={0.8} />,
               accent: "bg-white hover:bg-[hsl(var(--muted))]",
               iconBg: "bg-[hsl(var(--muted))] text-[hsl(var(--foreground))]",
             },
@@ -133,17 +140,17 @@ export default async function DashboardPage() {
               href: "/integrations",
               label: "Connect GA4",
               desc: "Link Google Analytics data source",
-              icon: "⚡",
+              icon: <Icon path={mdiFlash} size={0.8} />,
               accent: "bg-white hover:bg-[hsl(var(--muted))]",
               iconBg: "bg-amber-50 text-amber-600",
             },
-          ].map((a) => (
+          ].map((a, idx) => (
             <Link
-              key={a.href}
+              key={idx}
               href={a.href}
               className={`rounded-2xl border p-4 flex items-center gap-4 transition ${a.accent}`}
             >
-              <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-base font-bold flex-shrink-0 ${a.iconBg}`}>
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 ${a.iconBg}`}>
                 {a.icon}
               </div>
               <div>
@@ -166,7 +173,9 @@ export default async function DashboardPage() {
 
         {recentReports.length === 0 ? (
           <div className="px-6 py-16 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--muted))] flex items-center justify-center text-2xl mx-auto mb-4">📄</div>
+            <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--muted))] flex items-center justify-center text-[hsl(var(--muted-foreground))] mx-auto mb-4">
+              <Icon path={mdiFileDocument} size={1.4} />
+            </div>
             <p className="font-bold mb-1">No reports yet</p>
             <p className="text-sm text-[hsl(var(--muted-foreground))] mb-6 max-w-xs mx-auto">
               Connect a data source and generate your first AI-written client report.

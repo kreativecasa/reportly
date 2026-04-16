@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Icon from "@mdi/react";
+import { mdiFlash, mdiPalette, mdiSend, mdiStar, mdiLock, mdiCalendarCheck, mdiCreditCardOff } from "@mdi/js";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -34,12 +36,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {/* Benefits */}
           <div className="space-y-4 mb-12">
             {[
-              { icon: "⚡", text: "AI-written insights your clients actually read" },
-              { icon: "🎨", text: "Fully branded with your logo and colors" },
-              { icon: "📤", text: "PDF or share link delivered in one click" },
-            ].map((b) => (
-              <div key={b.text} className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-xl bg-white/8 border border-white/10 flex items-center justify-center text-sm flex-shrink-0">
+              { icon: <Icon path={mdiFlash} size={0.75} />, text: "AI-written insights your clients actually read" },
+              { icon: <Icon path={mdiPalette} size={0.75} />, text: "Fully branded with your logo and colors" },
+              { icon: <Icon path={mdiSend} size={0.75} />, text: "PDF or share link delivered in one click" },
+            ].map((b, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-xl bg-white/8 border border-white/10 flex items-center justify-center text-white/70 flex-shrink-0">
                   {b.icon}
                 </div>
                 <span className="text-sm text-white/80">{b.text}</span>
@@ -51,7 +53,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="rounded-2xl bg-white/5 border border-white/10 p-5">
             <div className="flex gap-0.5 mb-3">
               {Array.from({ length: 5 }).map((_, i) => (
-                <span key={i} className="text-amber-400 text-xs">★</span>
+                <Icon key={i} path={mdiStar} size={0.55} className="text-amber-400" />
               ))}
             </div>
             <p className="text-sm text-white/70 leading-relaxed mb-4">
@@ -99,8 +101,15 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         {/* Trust bar */}
         <div className="px-6 pb-8 flex items-center justify-center gap-6 flex-wrap">
-          {["🔒 Secure & encrypted", "✦ 14-day free trial", "✗ No credit card"].map((item) => (
-            <span key={item} className="text-xs text-[hsl(var(--muted-foreground))]">{item}</span>
+          {[
+            { icon: mdiLock, label: "Secure & encrypted" },
+            { icon: mdiCalendarCheck, label: "14-day free trial" },
+            { icon: mdiCreditCardOff, label: "No credit card" },
+          ].map((item) => (
+            <span key={item.label} className="flex items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))]">
+              <Icon path={item.icon} size={0.55} />
+              {item.label}
+            </span>
           ))}
         </div>
       </div>

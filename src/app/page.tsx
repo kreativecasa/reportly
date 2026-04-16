@@ -1,4 +1,26 @@
 import Link from "next/link";
+import Icon from "@mdi/react";
+import {
+  mdiFlash,
+  mdiRobot,
+  mdiSend,
+  mdiPencil,
+  mdiPalette,
+  mdiTrendingUp,
+  mdiLink,
+  mdiEmail,
+  mdiLock,
+  mdiFileDocument,
+  mdiOfficeBuilding,
+  mdiBriefcase,
+  mdiRocket,
+  mdiHandshake,
+  mdiStar,
+  mdiCheck,
+  mdiCheckCircle,
+  mdiCalendarCheck,
+  mdiCreditCardOff,
+} from "@mdi/js";
 
 export default function Home() {
   return (
@@ -29,7 +51,10 @@ export default function Home() {
         <div className="pointer-events-none absolute -bottom-32 -right-32 h-[500px] w-[500px] rounded-full bg-emerald-300/10 blur-3xl" />
 
         <div className="stappli-page relative text-center">
-          <span className="stappli-badge-active mb-6 inline-flex">✦ 14-day free trial — no credit card required</span>
+          <span className="stappli-badge-active mb-6 inline-flex items-center gap-1.5">
+            <Icon path={mdiCalendarCheck} size={0.6} />
+            14-day free trial — no credit card required
+          </span>
 
           <h1 className="mt-4 text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight max-w-4xl mx-auto">
             Client reports in{" "}
@@ -112,13 +137,13 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
           <div className="hidden md:block absolute top-12 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px bg-[hsl(var(--border))]" />
           {[
-            { step: "01", title: "Connect your data", desc: "One-click OAuth with Google Analytics 4. Your data flows in automatically — no CSV exports, no copy-paste.", icon: "⚡" },
-            { step: "02", title: "Generate with AI", desc: "Claude reads your metrics and writes narrative insights, identifies wins, flags concerns, and recommends actions.", icon: "🤖" },
-            { step: "03", title: "Deliver to clients", desc: "Download a polished branded PDF or share a live link. Clients receive a boardroom-ready report without the wait.", icon: "📤" },
+            { step: "01", title: "Connect your data", desc: "One-click OAuth with Google Analytics 4. Your data flows in automatically — no CSV exports, no copy-paste.", icon: mdiFlash },
+            { step: "02", title: "Generate with AI", desc: "Claude reads your metrics and writes narrative insights, identifies wins, flags concerns, and recommends actions.", icon: mdiRobot },
+            { step: "03", title: "Deliver to clients", desc: "Download a polished branded PDF or share a live link. Clients receive a boardroom-ready report without the wait.", icon: mdiSend },
           ].map((item) => (
             <div key={item.step} className="relative stappli-card p-8 hover-lift text-center">
-              <div className="w-12 h-12 rounded-2xl bg-[hsl(var(--primary))/0.08] flex items-center justify-center text-2xl mx-auto mb-6">
-                {item.icon}
+              <div className="w-12 h-12 rounded-2xl bg-[hsl(var(--primary))/0.08] text-[hsl(var(--primary))] flex items-center justify-center mx-auto mb-6">
+                <Icon path={item.icon} size={1.1} />
               </div>
               <span className="stappli-table-header text-[hsl(var(--primary))]">Step {item.step}</span>
               <h3 className="text-xl font-bold mt-2 mb-3">{item.title}</h3>
@@ -148,7 +173,9 @@ export default function Home() {
             <div className="md:col-span-2 rounded-3xl bg-gradient-to-br from-[hsl(var(--primary))] to-[#1a5cd8] p-8 flex flex-col justify-between min-h-[280px] relative overflow-hidden">
               <div className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-white/5 blur-2xl" />
               <div>
-                <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-xl mb-5">✍️</div>
+                <div className="w-10 h-10 rounded-2xl bg-white/10 text-white flex items-center justify-center mb-5">
+                  <Icon path={mdiPencil} size={0.9} />
+                </div>
                 <h3 className="text-2xl font-bold text-white mb-3">AI-written narratives</h3>
                 <p className="text-white/70 text-sm leading-relaxed max-w-sm">
                   Stop staring at spreadsheets. Reportly reads your data and writes executive-quality insights — wins, risks, and next steps — in plain language clients actually read.
@@ -156,14 +183,16 @@ export default function Home() {
               </div>
               <div className="mt-6 rounded-2xl bg-white/10 border border-white/10 p-4">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">Sample AI insight</p>
-                <p className="text-sm text-white/90 leading-relaxed">"Organic sessions grew 23% YoY, outpacing paid by 3x. The blog content strategy is compounding — <strong className='text-white'>recommend increasing editorial budget by 20%</strong> to capture Q3 momentum."</p>
+                <p className="text-sm text-white/90 leading-relaxed">&ldquo;Organic sessions grew 23% YoY, outpacing paid by 3x. The blog content strategy is compounding — <strong className="text-white">recommend increasing editorial budget by 20%</strong> to capture Q3 momentum.&rdquo;</p>
               </div>
             </div>
 
             {/* Card 2 — Small: Branding */}
             <div className="rounded-3xl bg-white/5 border border-white/10 p-8 flex flex-col justify-between min-h-[280px]">
               <div>
-                <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-xl mb-5">🎨</div>
+                <div className="w-10 h-10 rounded-2xl bg-white/10 text-white flex items-center justify-center mb-5">
+                  <Icon path={mdiPalette} size={0.9} />
+                </div>
                 <h3 className="text-xl font-bold text-white mb-3">Your brand, always</h3>
                 <p className="text-white/60 text-sm leading-relaxed">
                   Set your logo, colors, and workspace name once. Every report looks like it came from your team — not a third-party tool.
@@ -180,7 +209,9 @@ export default function Home() {
             {/* Card 3 — Small: Charts */}
             <div className="rounded-3xl bg-white/5 border border-white/10 p-8 flex flex-col justify-between min-h-[220px]">
               <div>
-                <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-xl mb-5">📈</div>
+                <div className="w-10 h-10 rounded-2xl bg-white/10 text-white flex items-center justify-center mb-5">
+                  <Icon path={mdiTrendingUp} size={0.9} />
+                </div>
                 <h3 className="text-xl font-bold text-white mb-3">Auto-generated charts</h3>
                 <p className="text-white/60 text-sm leading-relaxed">
                   Line, bar, area, and pie charts built from your GA4 data. No Excel, no Canva — just data that speaks for itself.
@@ -191,14 +222,18 @@ export default function Home() {
             {/* Card 4 — Large: Share + Deliver (2 cols) */}
             <div className="md:col-span-2 rounded-3xl bg-white/5 border border-white/10 p-8 flex flex-col md:flex-row gap-8 min-h-[220px]">
               <div className="flex-1">
-                <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-xl mb-5">🔗</div>
+                <div className="w-10 h-10 rounded-2xl bg-white/10 text-white flex items-center justify-center mb-5">
+                  <Icon path={mdiLink} size={0.9} />
+                </div>
                 <h3 className="text-xl font-bold text-white mb-3">Instant share links</h3>
                 <p className="text-white/60 text-sm leading-relaxed">
                   Generate a live, branded URL your client can open in any browser. No login required. No downloads. No friction.
                 </p>
               </div>
               <div className="flex-1">
-                <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-xl mb-5">📧</div>
+                <div className="w-10 h-10 rounded-2xl bg-white/10 text-white flex items-center justify-center mb-5">
+                  <Icon path={mdiEmail} size={0.9} />
+                </div>
                 <h3 className="text-xl font-bold text-white mb-3">One-click email delivery</h3>
                 <p className="text-white/60 text-sm leading-relaxed">
                   Send the report directly to your client from inside Reportly — complete with a branded message and PDF attachment.
@@ -209,7 +244,9 @@ export default function Home() {
             {/* Card 5 — Large: Security (2 cols) */}
             <div className="md:col-span-2 rounded-3xl bg-emerald-950/60 border border-emerald-800/30 p-8 flex flex-col md:flex-row gap-8 min-h-[200px]">
               <div className="flex-1">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-xl mb-5">🔒</div>
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-5">
+                  <Icon path={mdiLock} size={0.9} />
+                </div>
                 <h3 className="text-xl font-bold text-white mb-3">Enterprise-grade security</h3>
                 <p className="text-emerald-200/60 text-sm leading-relaxed">
                   All OAuth tokens are AES-256 encrypted at rest. Reports are private by default. Your clients&apos; data never leaves your control.
@@ -218,7 +255,9 @@ export default function Home() {
               <div className="flex-1 flex flex-col justify-center gap-3">
                 {["AES-256 token encryption", "Private reports by default", "Secure PDF storage", "OAuth 2.0 data access"].map((item) => (
                   <div key={item} className="flex items-center gap-2 text-sm text-emerald-200/70">
-                    <span className="h-5 w-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-xs flex-shrink-0">✓</span>
+                    <span className="h-5 w-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
+                      <Icon path={mdiCheck} size={0.55} />
+                    </span>
                     {item}
                   </div>
                 ))}
@@ -228,7 +267,9 @@ export default function Home() {
             {/* Card 6 — Small: PDF export */}
             <div className="rounded-3xl bg-white/5 border border-white/10 p-8 flex flex-col justify-between min-h-[200px]">
               <div>
-                <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-xl mb-5">📄</div>
+                <div className="w-10 h-10 rounded-2xl bg-white/10 text-white flex items-center justify-center mb-5">
+                  <Icon path={mdiFileDocument} size={0.9} />
+                </div>
                 <h3 className="text-xl font-bold text-white mb-3">Polished PDF export</h3>
                 <p className="text-white/60 text-sm leading-relaxed">
                   Pixel-perfect branded PDFs generated in seconds — ready to attach to any email or client portal.
@@ -251,13 +292,15 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { icon: "🏢", role: "Marketing Teams", desc: "Deliver board-ready performance decks without hiring a data analyst." },
-            { icon: "💼", role: "Consultants", desc: "Impress retainer clients with premium reports that took minutes, not days." },
-            { icon: "🚀", role: "Growth Professionals", desc: "Spend less time formatting and more time finding the next big opportunity." },
-            { icon: "🤝", role: "Account Managers", desc: "Keep every client informed, engaged, and seeing the value you deliver." },
+            { icon: mdiOfficeBuilding, role: "Marketing Teams", desc: "Deliver board-ready performance decks without hiring a data analyst." },
+            { icon: mdiBriefcase, role: "Consultants", desc: "Impress retainer clients with premium reports that took minutes, not days." },
+            { icon: mdiRocket, role: "Growth Professionals", desc: "Spend less time formatting and more time finding the next big opportunity." },
+            { icon: mdiHandshake, role: "Account Managers", desc: "Keep every client informed, engaged, and seeing the value you deliver." },
           ].map((item) => (
             <div key={item.role} className="stappli-card p-6 hover-lift">
-              <span className="text-2xl mb-3 block">{item.icon}</span>
+              <div className="text-[hsl(var(--primary))] mb-3">
+                <Icon path={item.icon} size={1.1} />
+              </div>
               <h3 className="font-bold text-sm mb-2">{item.role}</h3>
               <p className="text-xs text-[hsl(var(--muted-foreground))] leading-relaxed">{item.desc}</p>
             </div>
@@ -298,7 +341,9 @@ export default function Home() {
                   "Priority support",
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-3 text-sm">
-                    <span className="h-5 w-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold flex-shrink-0">✓</span>
+                    <span className="h-5 w-5 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center flex-shrink-0">
+                      <Icon path={mdiCheck} size={0.55} />
+                    </span>
                     {f}
                   </li>
                 ))}
@@ -339,12 +384,12 @@ export default function Home() {
             },
           ].map((t) => (
             <div key={t.name} className="stappli-card p-8 hover-lift flex flex-col">
-              <div className="flex gap-1 mb-5">
+              <div className="flex gap-0.5 mb-5">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <span key={i} className="text-amber-400 text-sm">★</span>
+                  <Icon key={i} path={mdiStar} size={0.65} className="text-amber-400" />
                 ))}
               </div>
-              <p className="text-sm text-[hsl(var(--foreground))] leading-relaxed flex-1 mb-6">"{t.quote}"</p>
+              <p className="text-sm text-[hsl(var(--foreground))] leading-relaxed flex-1 mb-6">&ldquo;{t.quote}&rdquo;</p>
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-full bg-[hsl(var(--primary))/0.1] flex items-center justify-center text-sm font-bold text-[hsl(var(--primary))]">
                   {t.name[0]}

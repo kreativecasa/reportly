@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { format } from "date-fns";
 import { getEffectivePlan, planLimits } from "@/lib/plan-limits";
+import { ResendVerificationButton } from "./resend-verification-button";
 
 export default async function DashboardPage() {
   const session = await requireSession();
@@ -44,10 +45,11 @@ export default async function DashboardPage() {
       </div>
 
       {!session.user.emailVerifiedAt && (
-        <div className="stappli-card p-5 mb-8 border-amber-200 bg-amber-50">
+        <div className="stappli-card p-5 mb-8 border-amber-200 bg-amber-50 flex items-center justify-between gap-4 flex-wrap">
           <p className="text-sm text-amber-900">
-            <strong>Verify your email</strong> to unlock report generation. Check your inbox for the link.
+            <strong>Verify your email</strong> to unlock report generation. Check your inbox for the verification link.
           </p>
+          <ResendVerificationButton email={session.user.email ?? ""} />
         </div>
       )}
 

@@ -54,6 +54,7 @@ export function ReportView({
   dateRangeEnd: string;
   sections: ReportSection[];
 }) {
+  const safeSections = Array.isArray(sections) ? sections : [];
   return (
     <div className="bg-white text-slate-900" style={{ ["--brand" as string]: brandColor }}>
       <header
@@ -79,8 +80,8 @@ export function ReportView({
       </header>
 
       <main className="px-12 py-10 space-y-12">
-        {sections.map((section) => (
-          <Section key={section.id} section={section} brandColor={brandColor} />
+        {safeSections.map((section, i) => (
+          <Section key={section.id ?? i} section={section} brandColor={brandColor} />
         ))}
       </main>
 
@@ -92,18 +93,21 @@ export function ReportView({
 }
 
 function Section({ section, brandColor }: { section: ReportSection; brandColor: string }) {
+  const keyMetrics = Array.isArray(section.keyMetrics) ? section.keyMetrics : [];
+  const insights = Array.isArray(section.insights) ? section.insights : [];
+
   return (
     <section>
       <h2 className="text-2xl font-bold mb-2" style={{ color: brandColor }}>
-        {section.title}
+        {section.title ?? ""}
       </h2>
       <div className="prose prose-sm max-w-none mb-6 whitespace-pre-wrap text-slate-700">
-        {section.narrative}
+        {section.narrative ?? ""}
       </div>
 
-      {(section.keyMetrics ?? []).length > 0 && (
+      {keyMetrics.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {(section.keyMetrics ?? []).map((m, i) => (
+          {keyMetrics.map((m, i) => (
             <div key={i} className="rounded-2xl border border-slate-200 p-4 bg-slate-50">
               <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{m.label}</p>
               <p className="text-2xl font-bold mt-1">{m.value}</p>
@@ -112,7 +116,8 @@ function Section({ section, brandColor }: { section: ReportSection; brandColor: 
                   m.trend === "up" ? "text-emerald-600" : m.trend === "down" ? "text-red-600" : "text-slate-500"
                 }`}
               >
-                {m.change > 0 ? "▲" : m.change < 0 ? "▼" : "—"} {Math.abs(m.change).toFixed(1)}%
+                {(m.change ?? 0) > 0 ? "▲" : (m.change ?? 0) < 0 ? "▼" : "—"}{" "}
+                {Math.abs(m.change ?? 0).toFixed(1)}%
               </p>
             </div>
           ))}
@@ -121,9 +126,9 @@ function Section({ section, brandColor }: { section: ReportSection; brandColor: 
 
       {section.chartData && <Chart config={section.chartData} brandColor={brandColor} />}
 
-      {(section.insights ?? []).length > 0 && (
+      {insights.length > 0 && (
         <div className="mt-6 space-y-2">
-          {(section.insights ?? []).map((ins, i) => (
+          {insights.map((ins, i) => (
             <div
               key={i}
               className={`rounded-xl p-4 text-sm ${
@@ -145,25 +150,31 @@ function Section({ section, brandColor }: { section: ReportSection; brandColor: 
 }
 
 function Chart({ config, brandColor }: { config: NonNullable<ReportSection["chartData"]>; brandColor: string }) {
+  // Defensive: ensure data is a valid array
+  const data = Array.isArray(config.data) ? config.data : [];
+  if (data.length === 0) return null;
+
   // Handle both yKey and yKeys (Claude sometimes returns yKeys plural)
   const rawYKey = config.yKey ?? (config as unknown as { yKeys?: string | string[] }).yKeys;
   const yKeys = (Array.isArray(rawYKey) ? rawYKey : rawYKey ? [rawYKey] : ["value"]).filter(Boolean);
+  if (yKeys.length === 0) return null;
+
+  const chartType = config.type;
+
   return (
     <div className="h-64 mt-2 mb-6 border border-slate-200 rounded-2xl p-4 bg-white">
       <ResponsiveContainer width="100%" height="100%">
-        {config.type === "line" ? (
-          <LineChart data={config.data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis dataKey={config.xKey} fontSize={10} />
-            <YAxis fontSize={10} />
+        {chartType === "pie" ? (
+          <PieChart>
+            <Pie data={data} dataKey={yKeys[0]} nameKey={config.xKey} cx="50%" cy="50%" outerRadius={80} label>
+              {data.map((_, i) => (
+                <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+              ))}
+            </Pie>
             <Tooltip />
-            <Legend />
-            {yKeys.map((k, i) => (
-              <Line key={k} type="monotone" dataKey={k} stroke={i === 0 ? brandColor : CHART_COLORS[i % CHART_COLORS.length]} strokeWidth={2} dot={false} />
-            ))}
-          </LineChart>
-        ) : config.type === "bar" ? (
-          <BarChart data={config.data}>
+          </PieChart>
+        ) : chartType === "bar" ? (
+          <BarChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis dataKey={config.xKey} fontSize={10} />
             <YAxis fontSize={10} />
@@ -173,26 +184,42 @@ function Chart({ config, brandColor }: { config: NonNullable<ReportSection["char
               <Bar key={k} dataKey={k} fill={i === 0 ? brandColor : CHART_COLORS[i % CHART_COLORS.length]} />
             ))}
           </BarChart>
-        ) : config.type === "area" ? (
-          <AreaChart data={config.data}>
+        ) : chartType === "area" ? (
+          <AreaChart data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
             <XAxis dataKey={config.xKey} fontSize={10} />
             <YAxis fontSize={10} />
             <Tooltip />
             <Legend />
             {yKeys.map((k, i) => (
-              <Area key={k} type="monotone" dataKey={k} stroke={i === 0 ? brandColor : CHART_COLORS[i % CHART_COLORS.length]} fill={i === 0 ? brandColor : CHART_COLORS[i % CHART_COLORS.length]} fillOpacity={0.2} />
+              <Area
+                key={k}
+                type="monotone"
+                dataKey={k}
+                stroke={i === 0 ? brandColor : CHART_COLORS[i % CHART_COLORS.length]}
+                fill={i === 0 ? brandColor : CHART_COLORS[i % CHART_COLORS.length]}
+                fillOpacity={0.2}
+              />
             ))}
           </AreaChart>
         ) : (
-          <PieChart>
-            <Pie data={config.data} dataKey={yKeys[0]} nameKey={config.xKey} cx="50%" cy="50%" outerRadius={80} label>
-              {config.data.map((_, i) => (
-                <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-              ))}
-            </Pie>
+          <LineChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+            <XAxis dataKey={config.xKey} fontSize={10} />
+            <YAxis fontSize={10} />
             <Tooltip />
-          </PieChart>
+            <Legend />
+            {yKeys.map((k, i) => (
+              <Line
+                key={k}
+                type="monotone"
+                dataKey={k}
+                stroke={i === 0 ? brandColor : CHART_COLORS[i % CHART_COLORS.length]}
+                strokeWidth={2}
+                dot={false}
+              />
+            ))}
+          </LineChart>
         )}
       </ResponsiveContainer>
     </div>

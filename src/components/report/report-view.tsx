@@ -145,7 +145,9 @@ function Section({ section, brandColor }: { section: ReportSection; brandColor: 
 }
 
 function Chart({ config, brandColor }: { config: NonNullable<ReportSection["chartData"]>; brandColor: string }) {
-  const yKeys = Array.isArray(config.yKey) ? config.yKey : [config.yKey];
+  // Handle both yKey and yKeys (Claude sometimes returns yKeys plural)
+  const rawYKey = config.yKey ?? (config as unknown as { yKeys?: string | string[] }).yKeys;
+  const yKeys = (Array.isArray(rawYKey) ? rawYKey : rawYKey ? [rawYKey] : ["value"]).filter(Boolean);
   return (
     <div className="h-64 mt-2 mb-6 border border-slate-200 rounded-2xl p-4 bg-white">
       <ResponsiveContainer width="100%" height="100%">

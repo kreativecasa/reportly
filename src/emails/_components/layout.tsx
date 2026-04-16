@@ -38,9 +38,7 @@ export function EmailLayout({ preview, children }: { preview: string; children: 
           {children}
           <Hr style={{ borderColor: "#e2e8f0", margin: "24px 0" }} />
           <Text style={footer}>
-            Reportly · AI-powered client reports for agencies and freelancers.
-            <br />
-            You received this email because of activity on your account.
+            Intelligent client reporting, powered by AI
           </Text>
         </Container>
       </Body>

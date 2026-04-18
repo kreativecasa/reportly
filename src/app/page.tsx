@@ -518,9 +518,13 @@ export default function Home() {
 
           <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/40">
             <span>© {new Date().getFullYear()} Reportly. All rights reserved.</span>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>All systems operational</span>
+            <div className="flex items-center gap-6">
+              <Link href="/privacy" className="hover:text-white transition">Privacy</Link>
+              <Link href="/terms" className="hover:text-white transition">Terms</Link>
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>All systems operational</span>
+              </div>
             </div>
           </div>
         </div>

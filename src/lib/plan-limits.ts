@@ -5,6 +5,7 @@ import { format } from "date-fns";
 export class PlanLimitError extends Error {
   constructor(public readonly limit: "clients" | "reports" | "integrations", public readonly upgradeUrl = "/billing") {
     super(`Plan limit reached: ${limit}`);
+    this.name = "PlanLimitError";
   }
 }
 

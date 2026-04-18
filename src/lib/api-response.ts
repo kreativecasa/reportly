@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
+import { PlanLimitError } from "./plan-limits";
 
 type ErrorCode =
   | "UNAUTHORIZED"
@@ -42,9 +43,8 @@ export class ApiError extends Error {
 export function handleError(err: unknown) {
   if (err instanceof ApiError) return fail(err.code, err.message, err.details);
   if (err instanceof ZodError) return fail("VALIDATION_ERROR", "Invalid input", err.issues);
-  if (err instanceof Error && err.name === "PlanLimitError") {
-    const pe = err as Error & { limit?: string; upgradeUrl?: string };
-    return fail("PLAN_LIMIT", pe.message, { limit: pe.limit, upgradeUrl: pe.upgradeUrl });
+  if (err instanceof PlanLimitError) {
+    return fail("PLAN_LIMIT", err.message, { limit: err.limit, upgradeUrl: err.upgradeUrl });
   }
   console.error("Unhandled API error:", err);
   return fail("INTERNAL_ERROR", "Something went wrong");

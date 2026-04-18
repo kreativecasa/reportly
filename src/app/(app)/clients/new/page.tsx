@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { UpgradePrompt } from "@/components/upgrade-prompt";
 
 export default function NewClientPage() {
   const router = useRouter();
@@ -11,12 +12,14 @@ export default function NewClientPage() {
   const [industry, setIndustry] = useState("");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [planLimit, setPlanLimit] = useState<{ limit?: string; upgradeUrl?: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setPlanLimit(null);
     const res = await fetch("/api/clients", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -25,6 +28,10 @@ export default function NewClientPage() {
     const json = await res.json();
     setLoading(false);
     if (!json.success) {
+      if (json.error?.code === "PLAN_LIMIT") {
+        setPlanLimit(json.error.details ?? { limit: "clients" });
+        return;
+      }
       setError(json.error?.message ?? "Failed to create client");
       return;
     }
@@ -53,6 +60,7 @@ export default function NewClientPage() {
         <Field label="Notes">
           <textarea rows={3} className="stappli-input h-auto py-3" value={notes} onChange={(e) => setNotes(e.target.value)} />
         </Field>
+        {planLimit && <UpgradePrompt limit={planLimit.limit} upgradeUrl={planLimit.upgradeUrl} />}
         {error && <p className="text-sm text-[hsl(var(--destructive))]">{error}</p>}
         <div className="flex gap-3">
           <Link href="/clients" className="stappli-button-ghost flex-1 text-center">

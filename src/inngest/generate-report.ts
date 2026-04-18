@@ -1,6 +1,7 @@
 import { inngest } from "./client";
 import { prisma } from "@/lib/prisma";
 import { fetchGA4Data } from "@/lib/ga4";
+import { fetchGSCData } from "@/lib/gsc";
 import { generateReportSections } from "@/lib/claude";
 import { incrementReportUsage } from "@/lib/plan-limits";
 
@@ -27,11 +28,24 @@ export const generateReport = inngest.createFunction(
     });
 
     const ga4Source = report.dataSources.find((rds) => rds.dataSource.type === "GOOGLE_ANALYTICS_4");
+    const gscSource = report.dataSources.find((rds) => rds.dataSource.type === "GOOGLE_SEARCH_CONSOLE");
+
     let ga4Data = null;
     if (ga4Source) {
       ga4Data = await step.run("fetch-ga4", async () => {
         return await fetchGA4Data(
           ga4Source.dataSource.id,
+          new Date(report.dateRangeStart),
+          new Date(report.dateRangeEnd),
+        );
+      });
+    }
+
+    let gscData = null;
+    if (gscSource) {
+      gscData = await step.run("fetch-gsc", async () => {
+        return await fetchGSCData(
+          gscSource.dataSource.id,
           new Date(report.dateRangeStart),
           new Date(report.dateRangeEnd),
         );
@@ -45,6 +59,7 @@ export const generateReport = inngest.createFunction(
         dateRangeStart: new Date(report.dateRangeStart),
         dateRangeEnd: new Date(report.dateRangeEnd),
         ga4: ga4Data ?? undefined,
+        gsc: gscData ?? undefined,
       });
     });
 
@@ -53,7 +68,7 @@ export const generateReport = inngest.createFunction(
         where: { id: reportId },
         data: {
           sections: sections as never,
-          rawDataSnapshot: (ga4Data ?? undefined) as never,
+          rawDataSnapshot: { ga4: ga4Data ?? null, gsc: gscData ?? null } as never,
           status: "READY",
           errorMessage: null,
         },

@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { env } from "./env";
 import type { GA4Data } from "./ga4";
+import type { GSCData } from "./gsc";
 
 let client: Anthropic | null = null;
 
@@ -40,6 +41,7 @@ interface GenerateInput {
   dateRangeStart: Date;
   dateRangeEnd: Date;
   ga4?: GA4Data;
+  gsc?: GSCData;
 }
 
 function summarizeGA4ForPrompt(data: GA4Data) {
@@ -53,9 +55,24 @@ function summarizeGA4ForPrompt(data: GA4Data) {
   };
 }
 
+function summarizeGSCForPrompt(data: GSCData) {
+  return {
+    totals: data.totals,
+    previousPeriod: data.comparison,
+    topQueries: data.topQueries.slice(0, 10),
+    topPages: data.topPages.slice(0, 5),
+    topCountries: data.topCountries.slice(0, 5),
+    devices: data.devices,
+    dailyTrendSample: data.dailyTrend.slice(0, 30),
+  };
+}
+
 function buildUserPrompt(input: GenerateInput): string {
   const fmt = (d: Date) => d.toISOString().slice(0, 10);
-  const dataBlock = input.ga4 ? JSON.stringify(summarizeGA4ForPrompt(input.ga4), null, 2) : "No GA4 data connected.";
+  const ga4Block = input.ga4 ? JSON.stringify(summarizeGA4ForPrompt(input.ga4), null, 2) : "No GA4 data connected.";
+  const gscBlock = input.gsc ? JSON.stringify(summarizeGSCForPrompt(input.gsc), null, 2) : "No Search Console data connected.";
+
+  const hasSeo = Boolean(input.gsc);
 
   return `Generate a professional marketing report.
 
@@ -64,13 +81,17 @@ Industry: ${input.industry ?? "Unspecified"}
 Reporting period: ${fmt(input.dateRangeStart)} to ${fmt(input.dateRangeEnd)}
 
 GA4 DATA:
-${dataBlock}
+${ga4Block}
+
+SEARCH CONSOLE DATA:
+${gscBlock}
 
 SECTIONS TO GENERATE (as a JSON array in this exact order):
 1. overview — Executive summary (1-2 paragraphs) + 4 top-level metrics (sessions, users, conversions, bounce rate)
 2. traffic — Traffic breakdown with narrative + top sources + line chart of dailyTrend (xKey:"date", yKey:["sessions","users"])
 3. engagement — Top pages, engagement metrics, narrative
-4. conversions — Conversion performance, trends, and recommendations
+4. conversions — Conversion performance, trends, and recommendations${hasSeo ? `
+5. seo — SEO performance from Search Console: clicks + impressions trend, top queries (with CTR and average position), content opportunities. Include chartData of dailyTrend (xKey:"date", yKey:["clicks","impressions"]).` : ""}
 
 FORMAT (return ONLY this JSON shape — no markdown, no code fences):
 {
@@ -131,6 +152,21 @@ export async function generateReportSections(input: GenerateInput): Promise<Repo
         })),
         xKey: "date",
         yKey: ["sessions", "users"],
+      };
+    }
+  }
+  if (input.gsc) {
+    const seo = sections.find((s) => s.type === "seo");
+    if (seo && !seo.chartData) {
+      seo.chartData = {
+        type: "line",
+        data: input.gsc.dailyTrend.map((d) => ({
+          date: d.date,
+          clicks: d.clicks,
+          impressions: d.impressions,
+        })),
+        xKey: "date",
+        yKey: ["clicks", "impressions"],
       };
     }
   }

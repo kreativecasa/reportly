@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { format } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
+import Icon from "@mdi/react";
+import { mdiFileDocument } from "@mdi/js";
 
 export default async function ReportsPage() {
   const session = await requireSession();
@@ -28,8 +30,14 @@ export default async function ReportsPage() {
       </div>
 
       {reports.length === 0 ? (
-        <div className="stappli-card p-10 text-center">
-          <p className="text-sm text-[hsl(var(--muted-foreground))] mb-4">No reports yet.</p>
+        <div className="stappli-card p-12 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--primary))/0.08] text-[hsl(var(--primary))] flex items-center justify-center mx-auto mb-4">
+            <Icon path={mdiFileDocument} size={1.2} />
+          </div>
+          <p className="font-bold mb-1">No reports yet</p>
+          <p className="text-sm text-[hsl(var(--muted-foreground))] mb-6 max-w-sm mx-auto">
+            Reports are AI-written summaries of your client&apos;s marketing performance. You&apos;ll need at least one client and one connected data source.
+          </p>
           <Link href="/reports/new" className="stappli-button-primary">
             Generate your first report
           </Link>

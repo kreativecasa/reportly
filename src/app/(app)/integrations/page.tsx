@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { IntegrationsClient } from "./integrations-client";
 import Icon from "@mdi/react";
-import { mdiCheckCircle } from "@mdi/js";
+import { mdiCheckCircle, mdiInformationOutline } from "@mdi/js";
 
 export default async function IntegrationsPage({
   searchParams,
@@ -27,9 +27,19 @@ export default async function IntegrationsPage({
 
   return (
     <>
-      <div className="mb-10">
+      <div className="mb-8">
         <h1 className="stappli-title">Integrations</h1>
         <p className="stappli-subtitle mt-1">Connect your data sources to auto-fill reports.</p>
+      </div>
+
+      <div className="rounded-2xl border border-[hsl(var(--border))] bg-white px-5 py-4 mb-8 flex items-start gap-3">
+        <span className="h-7 w-7 rounded-lg bg-[hsl(var(--primary))/0.08] text-[hsl(var(--primary))] flex items-center justify-center flex-shrink-0 mt-0.5">
+          <Icon path={mdiInformationOutline} size={0.7} />
+        </span>
+        <div className="text-sm text-[hsl(var(--muted-foreground))]">
+          <p className="text-[hsl(var(--foreground))] font-medium mb-1">How integrations work</p>
+          Reportly connects to each client&apos;s analytics via OAuth — no passwords or copy-paste. When you generate a report, Claude fetches the latest 30-day metrics from every connected source and writes the narrative. You can attach one source to all clients, or a dedicated source per client.
+        </div>
       </div>
 
       {connected && (

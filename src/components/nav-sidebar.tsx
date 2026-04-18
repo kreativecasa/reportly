@@ -114,14 +114,29 @@ export function NavSidebar({ email, initials }: { email: string; initials: strin
         })}
       </nav>
 
+      {/* Help link */}
+      <div className="px-4 pb-3">
+        <a
+          href="mailto:support@reportlyapp.me"
+          className="flex items-center gap-2 text-xs text-white/50 hover:text-white/80 transition"
+        >
+          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          Need help? Email support
+        </a>
+      </div>
+
       {/* User section */}
-      <div className="px-4 py-5 border-t border-white/8">
+      <div className="px-4 py-4 border-t border-white/8">
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-full bg-[hsl(var(--primary))/0.3] border border-[hsl(var(--primary))/0.4] flex items-center justify-center text-xs font-bold text-[hsl(var(--primary))] flex-shrink-0">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs text-white/70 truncate">{email}</p>
+            <p className="text-xs text-white/70 truncate" title={email}>{email}</p>
           </div>
         </div>
       </div>

@@ -17,7 +17,9 @@ export async function GET(req: NextRequest) {
       { ex: 600 },
     );
 
-    const redirectUri = `${env.core().NEXT_PUBLIC_APP_URL}/api/data-sources/callback/gsc`;
+    // Reuse the GA4 callback URI — it's already whitelisted in the Google Cloud
+    // OAuth client. The GA4 callback handler dispatches by state-key prefix.
+    const redirectUri = `${env.core().NEXT_PUBLIC_APP_URL}/api/data-sources/callback/ga4`;
     return NextResponse.redirect(gscAuthUrl(redirectUri, state));
   } catch (err) {
     console.error("gsc connect error:", err);

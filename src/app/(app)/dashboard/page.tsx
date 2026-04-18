@@ -6,7 +6,18 @@ import { format } from "date-fns";
 import { getEffectivePlan, planLimits } from "@/lib/plan-limits";
 import { ResendVerificationButton } from "./resend-verification-button";
 import Icon from "@mdi/react";
-import { mdiHandWave, mdiAlertCircle, mdiAutoFix, mdiPlus, mdiFlash, mdiFileDocument } from "@mdi/js";
+import {
+  mdiHandWave,
+  mdiAlertCircle,
+  mdiAutoFix,
+  mdiPlus,
+  mdiFlash,
+  mdiFileDocument,
+  mdiAccountMultiplePlus,
+  mdiConnection,
+  mdiRocketLaunch,
+  mdiCheckCircle,
+} from "@mdi/js";
 
 export default async function DashboardPage() {
   const session = await requireSession();
@@ -31,6 +42,16 @@ export default async function DashboardPage() {
   const limits = planLimits(plan);
 
   const firstName = session.user.name?.split(" ")[0] ?? session.user.email?.split("@")[0] ?? "there";
+
+  const totalReports = await prisma.report.count({ where: { workspaceId: workspace.id, isArchived: false } });
+  const setupSteps = [
+    { done: clients > 0, title: "Add your first client", href: "/clients/new", desc: "The company you'll generate reports for.", icon: mdiAccountMultiplePlus },
+    { done: integrations > 0, title: "Connect a data source", href: "/integrations", desc: "Link Google Analytics or Search Console.", icon: mdiConnection },
+    { done: totalReports > 0, title: "Generate your first report", href: "/reports/new", desc: "Claude writes the narrative in 60 seconds.", icon: mdiRocketLaunch },
+  ];
+  const completedSteps = setupSteps.filter((s) => s.done).length;
+  const showChecklist = completedSteps < 3;
+  const nextStep = setupSteps.find((s) => !s.done);
 
   return (
     <div className="space-y-8">
@@ -66,6 +87,76 @@ export default async function DashboardPage() {
             </div>
           </div>
           <ResendVerificationButton email={session.user.email ?? ""} />
+        </div>
+      )}
+
+      {/* ── Getting started checklist ── */}
+      {showChecklist && (
+        <div className="stappli-card p-6 bg-gradient-to-br from-[hsl(var(--primary))/0.04] to-white border-[hsl(var(--primary))/0.15]">
+          <div className="flex items-start justify-between gap-4 mb-5">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[hsl(var(--primary))] bg-[hsl(var(--primary))/0.1] px-2 py-0.5 rounded-full">
+                  Getting started
+                </span>
+                <span className="text-xs font-medium text-[hsl(var(--muted-foreground))]">
+                  {completedSteps} of 3 complete
+                </span>
+              </div>
+              <h2 className="font-bold text-base">Set up Reportly in 3 steps</h2>
+              <p className="text-xs text-[hsl(var(--muted-foreground))] mt-1">
+                Each step takes under a minute. You&apos;ll be sending your first client report in ~5 minutes.
+              </p>
+            </div>
+            {nextStep && (
+              <Link href={nextStep.href} className="stappli-button-primary h-9 text-xs flex-shrink-0">
+                Continue →
+              </Link>
+            )}
+          </div>
+
+          {/* Progress bar */}
+          <div className="h-1.5 w-full rounded-full bg-[hsl(var(--muted))] overflow-hidden mb-5">
+            <div
+              className="h-full rounded-full bg-[hsl(var(--primary))] transition-all"
+              style={{ width: `${(completedSteps / 3) * 100}%` }}
+            />
+          </div>
+
+          <div className="space-y-2">
+            {setupSteps.map((step, idx) => (
+              <Link
+                key={step.title}
+                href={step.href}
+                className={`flex items-center gap-3 rounded-xl p-3 border transition ${
+                  step.done
+                    ? "border-emerald-200 bg-emerald-50/40"
+                    : step === nextStep
+                    ? "border-[hsl(var(--primary))/0.3] bg-[hsl(var(--primary))/0.04] hover:bg-[hsl(var(--primary))/0.08]"
+                    : "border-[hsl(var(--border))] bg-white hover:bg-[hsl(var(--muted))]"
+                }`}
+              >
+                <div
+                  className={`h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    step.done
+                      ? "bg-emerald-100 text-emerald-600"
+                      : "bg-[hsl(var(--primary))/0.1] text-[hsl(var(--primary))]"
+                  }`}
+                >
+                  <Icon path={step.done ? mdiCheckCircle : step.icon} size={0.75} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-bold ${step.done ? "line-through text-[hsl(var(--muted-foreground))]" : ""}`}>
+                    Step {idx + 1} · {step.title}
+                  </p>
+                  <p className="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">{step.desc}</p>
+                </div>
+                <span className="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">
+                  {step.done ? "Done" : "→"}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
 

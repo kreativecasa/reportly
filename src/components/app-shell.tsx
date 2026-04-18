@@ -35,13 +35,23 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             {/* Desktop: spacer */}
             <div className="hidden lg:block" />
 
-            {/* Right: user + sign out */}
-            <div className="flex items-center gap-3 flex-shrink-0">
-              <div className="hidden sm:flex items-center gap-2">
-                <div className="h-7 w-7 rounded-full bg-[hsl(var(--primary))/0.1] flex items-center justify-center text-[10px] font-bold text-[hsl(var(--primary))]">
-                  {initials}
-                </div>
-                <span className="text-xs text-[hsl(var(--muted-foreground))] max-w-[160px] truncate">{email}</span>
+            {/* Right: help + sign out. Identity is shown in the sidebar on desktop; mobile keeps a compact avatar below. */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <a
+                href="mailto:support@reportlyapp.me"
+                className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition px-3 py-1.5 rounded-lg hover:bg-[hsl(var(--muted))]"
+                title="Need help? Email support@reportlyapp.me"
+              >
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                  <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                Help
+              </a>
+              {/* Mobile-only compact avatar (identity also lives in the mobile nav toolbar) */}
+              <div className="lg:hidden h-8 w-8 rounded-full bg-[hsl(var(--primary))/0.1] flex items-center justify-center text-[10px] font-bold text-[hsl(var(--primary))]">
+                {initials}
               </div>
               <form
                 action={async () => {

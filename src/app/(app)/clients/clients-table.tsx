@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Icon from "@mdi/react";
+import { mdiAccountMultiplePlus } from "@mdi/js";
 
 interface ClientRow {
   id: string;
@@ -13,8 +15,14 @@ interface ClientRow {
 export function ClientsTable({ clients }: { clients: ClientRow[] }) {
   if (clients.length === 0) {
     return (
-      <div className="stappli-card p-10 text-center">
-        <p className="text-sm text-[hsl(var(--muted-foreground))] mb-4">No clients yet.</p>
+      <div className="stappli-card p-12 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-[hsl(var(--primary))/0.08] text-[hsl(var(--primary))] flex items-center justify-center mx-auto mb-4">
+          <Icon path={mdiAccountMultiplePlus} size={1.2} />
+        </div>
+        <p className="font-bold mb-1">No clients yet</p>
+        <p className="text-sm text-[hsl(var(--muted-foreground))] mb-6 max-w-sm mx-auto">
+          A client is a company you write reports for. Add one to start generating AI-written marketing summaries.
+        </p>
         <Link href="/clients/new" className="stappli-button-primary">
           Add your first client
         </Link>

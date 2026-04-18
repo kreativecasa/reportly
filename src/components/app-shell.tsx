@@ -25,8 +25,17 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         <header className="bg-white border-b border-[hsl(var(--border))] flex-shrink-0">
           <div className="flex items-center justify-between px-6 py-3 gap-4">
             {/* Mobile: logo + nav */}
-            <div className="flex lg:hidden items-center gap-3">
-              <Link href="/dashboard" className="text-base font-bold mr-2">Reportly</Link>
+            <div className="flex lg:hidden items-center gap-2.5 mr-2">
+              <Link href="/dashboard" className="inline-flex items-center gap-2">
+                <span
+                  className="h-7 w-7 rounded-lg flex items-center justify-center text-white font-black text-[15px] tracking-tight"
+                  style={{ background: "linear-gradient(135deg, #3475EF 0%, #1E5AE2 100%)" }}
+                  aria-hidden
+                >
+                  R
+                </span>
+                <span className="text-base font-extrabold tracking-tight">Reportly</span>
+              </Link>
             </div>
             <div className="flex lg:hidden flex-1 overflow-hidden">
               <MobileNav email={email} />

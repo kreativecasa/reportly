@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Icon from "@mdi/react";
+import { Brand } from "@/components/brand";
 import {
   mdiFlash,
   mdiRobot,
@@ -28,7 +29,8 @@ export default function Home() {
       {/* ── Sticky Nav ── */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-[hsl(var(--border))]">
         <div className="stappli-page flex items-center justify-between py-4">
-          <span className="text-xl font-bold tracking-tight">Reportly</span>
+          <Brand size="lg" href="/" />
+
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[hsl(var(--muted-foreground))]">
             <a href="#how-it-works" className="hover:text-[hsl(var(--foreground))] transition">How it works</a>
             <a href="#features" className="hover:text-[hsl(var(--foreground))] transition">Features</a>
@@ -479,7 +481,7 @@ export default function Home() {
         <div className="stappli-page py-16">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="md:col-span-2">
-              <span className="text-xl font-bold">Reportly</span>
+              <Brand size="lg" href={null} color="light" />
               <p className="mt-3 text-sm text-white/60 leading-relaxed max-w-sm">
                 Intelligent client reporting, powered by AI. Stop spending hours on reports — start impressing clients in seconds.
               </p>

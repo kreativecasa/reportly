@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Brand } from "@/components/brand";
 
 type Step = 1 | 2 | 3;
 
@@ -43,7 +44,7 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F3F9F8] to-white">
       <header className="stappli-page py-6">
-        <span className="text-xl font-bold">Reportly</span>
+        <Brand size="lg" href={null} />
       </header>
 
       <main className="max-w-lg mx-auto px-4 pb-20">

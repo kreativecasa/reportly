@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Icon from "@mdi/react";
 import { mdiFlash, mdiPalette, mdiSend, mdiStar, mdiLock, mdiCalendarCheck, mdiCreditCardOff } from "@mdi/js";
+import { Brand } from "@/components/brand";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,9 +13,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="pointer-events-none absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-emerald-500/5 blur-3xl translate-y-1/2 -translate-x-1/2" />
 
         {/* Logo */}
-        <Link href="/" className="relative text-xl font-bold text-white">
-          Reportly
-        </Link>
+        <div className="relative">
+          <Brand size="lg" href="/" color="light" />
+        </div>
 
         {/* Main marketing copy */}
         <div className="relative">
@@ -79,7 +80,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="flex-1 flex flex-col min-h-screen bg-white">
         {/* Mobile header */}
         <div className="lg:hidden flex items-center justify-between px-6 py-5 border-b border-[hsl(var(--border))]">
-          <Link href="/" className="text-lg font-bold">Reportly</Link>
+          <Brand size="md" href="/" />
           <Link href="/" className="text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition">
             ← Back
           </Link>

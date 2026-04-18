@@ -2,6 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { env } from "./env";
 import type { GA4Data } from "./ga4";
 import type { GSCData } from "./gsc";
+import type { MetaAdsData } from "./meta-ads";
 
 let client: Anthropic | null = null;
 
@@ -42,6 +43,7 @@ interface GenerateInput {
   dateRangeEnd: Date;
   ga4?: GA4Data;
   gsc?: GSCData;
+  metaAds?: MetaAdsData;
 }
 
 function summarizeGA4ForPrompt(data: GA4Data) {
@@ -67,12 +69,27 @@ function summarizeGSCForPrompt(data: GSCData) {
   };
 }
 
+function summarizeMetaForPrompt(data: MetaAdsData) {
+  return {
+    totals: data.totals,
+    previousPeriod: data.comparison,
+    topCampaigns: data.topCampaigns.slice(0, 10),
+    dailyTrendSample: data.dailyTrend.slice(0, 30),
+  };
+}
+
 function buildUserPrompt(input: GenerateInput): string {
   const fmt = (d: Date) => d.toISOString().slice(0, 10);
   const ga4Block = input.ga4 ? JSON.stringify(summarizeGA4ForPrompt(input.ga4), null, 2) : "No GA4 data connected.";
   const gscBlock = input.gsc ? JSON.stringify(summarizeGSCForPrompt(input.gsc), null, 2) : "No Search Console data connected.";
+  const metaBlock = input.metaAds ? JSON.stringify(summarizeMetaForPrompt(input.metaAds), null, 2) : "No Meta Ads data connected.";
 
   const hasSeo = Boolean(input.gsc);
+  const hasPaid = Boolean(input.metaAds);
+  const nextSectionNumber = (() => {
+    let n = 4; // up to "conversions"
+    return () => ++n;
+  })();
 
   return `Generate a professional marketing report.
 
@@ -86,12 +103,16 @@ ${ga4Block}
 SEARCH CONSOLE DATA:
 ${gscBlock}
 
+META ADS DATA:
+${metaBlock}
+
 SECTIONS TO GENERATE (as a JSON array in this exact order):
 1. overview — Executive summary (1-2 paragraphs) + 4 top-level metrics (sessions, users, conversions, bounce rate)
 2. traffic — Traffic breakdown with narrative + top sources + line chart of dailyTrend (xKey:"date", yKey:["sessions","users"])
 3. engagement — Top pages, engagement metrics, narrative
 4. conversions — Conversion performance, trends, and recommendations${hasSeo ? `
-5. seo — SEO performance from Search Console: clicks + impressions trend, top queries (with CTR and average position), content opportunities. Include chartData of dailyTrend (xKey:"date", yKey:["clicks","impressions"]).` : ""}
+${nextSectionNumber()}. seo — SEO performance from Search Console: clicks + impressions trend, top queries (with CTR and average position), content opportunities. Include chartData of dailyTrend (xKey:"date", yKey:["clicks","impressions"]).` : ""}${hasPaid ? `
+${nextSectionNumber()}. paid — Meta Ads performance: total spend, ROAS (conversions / spend), CTR, top campaigns by spend, waste flags. Include chartData of dailyTrend (xKey:"date", yKey:["spend","clicks"]). Currency: ${input.metaAds?.totals.currency ?? "USD"}.` : ""}
 
 FORMAT (return ONLY this JSON shape — no markdown, no code fences):
 {
@@ -167,6 +188,21 @@ export async function generateReportSections(input: GenerateInput): Promise<Repo
         })),
         xKey: "date",
         yKey: ["clicks", "impressions"],
+      };
+    }
+  }
+  if (input.metaAds) {
+    const paid = sections.find((s) => s.type === "paid");
+    if (paid && !paid.chartData) {
+      paid.chartData = {
+        type: "line",
+        data: input.metaAds.dailyTrend.map((d) => ({
+          date: d.date,
+          spend: d.spend,
+          clicks: d.clicks,
+        })),
+        xKey: "date",
+        yKey: ["spend", "clicks"],
       };
     }
   }

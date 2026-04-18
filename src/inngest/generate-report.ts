@@ -2,6 +2,7 @@ import { inngest } from "./client";
 import { prisma } from "@/lib/prisma";
 import { fetchGA4Data } from "@/lib/ga4";
 import { fetchGSCData } from "@/lib/gsc";
+import { fetchMetaAdsData } from "@/lib/meta-ads";
 import { generateReportSections } from "@/lib/claude";
 import { incrementReportUsage } from "@/lib/plan-limits";
 
@@ -29,6 +30,7 @@ export const generateReport = inngest.createFunction(
 
     const ga4Source = report.dataSources.find((rds) => rds.dataSource.type === "GOOGLE_ANALYTICS_4");
     const gscSource = report.dataSources.find((rds) => rds.dataSource.type === "GOOGLE_SEARCH_CONSOLE");
+    const metaSource = report.dataSources.find((rds) => rds.dataSource.type === "META_ADS");
 
     let ga4Data = null;
     if (ga4Source) {
@@ -52,6 +54,17 @@ export const generateReport = inngest.createFunction(
       });
     }
 
+    let metaData = null;
+    if (metaSource) {
+      metaData = await step.run("fetch-meta-ads", async () => {
+        return await fetchMetaAdsData(
+          metaSource.dataSource.id,
+          new Date(report.dateRangeStart),
+          new Date(report.dateRangeEnd),
+        );
+      });
+    }
+
     const sections = await step.run("claude-generate", async () => {
       return await generateReportSections({
         clientName: report.client.name,
@@ -60,6 +73,7 @@ export const generateReport = inngest.createFunction(
         dateRangeEnd: new Date(report.dateRangeEnd),
         ga4: ga4Data ?? undefined,
         gsc: gscData ?? undefined,
+        metaAds: metaData ?? undefined,
       });
     });
 
@@ -68,7 +82,7 @@ export const generateReport = inngest.createFunction(
         where: { id: reportId },
         data: {
           sections: sections as never,
-          rawDataSnapshot: { ga4: ga4Data ?? null, gsc: gscData ?? null } as never,
+          rawDataSnapshot: { ga4: ga4Data ?? null, gsc: gscData ?? null, metaAds: metaData ?? null } as never,
           status: "READY",
           errorMessage: null,
         },

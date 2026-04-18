@@ -27,36 +27,48 @@ interface IntegrationDef {
   connectPath?: string;
 }
 
-const AVAILABLE: IntegrationDef[] = [
-  {
-    type: "GOOGLE_ANALYTICS_4",
-    label: "Google Analytics 4",
-    available: true,
-    description: "Sessions, users, pages, sources, conversions.",
-    connectPath: "/api/data-sources/connect/ga4",
-  },
-  {
-    type: "GOOGLE_SEARCH_CONSOLE",
-    label: "Google Search Console",
-    available: true,
-    description: "Clicks, impressions, top queries, CTR, and position.",
-    connectPath: "/api/data-sources/connect/gsc",
-  },
-  {
-    type: "GOOGLE_ADS",
-    label: "Google Ads",
-    available: false,
-    description: "Spend, conversions, ROAS, and campaign performance.",
-  },
-  {
-    type: "META_ADS",
-    label: "Meta Ads",
-    available: false,
-    description: "Facebook + Instagram ad spend, reach, conversions.",
-  },
-];
+function buildCatalog(metaConfigured: boolean): IntegrationDef[] {
+  return [
+    {
+      type: "GOOGLE_ANALYTICS_4",
+      label: "Google Analytics 4",
+      available: true,
+      description: "Sessions, users, pages, sources, conversions.",
+      connectPath: "/api/data-sources/connect/ga4",
+    },
+    {
+      type: "GOOGLE_SEARCH_CONSOLE",
+      label: "Google Search Console",
+      available: true,
+      description: "Clicks, impressions, top queries, CTR, and position.",
+      connectPath: "/api/data-sources/connect/gsc",
+    },
+    {
+      type: "GOOGLE_ADS",
+      label: "Google Ads",
+      available: false,
+      description: "Spend, conversions, ROAS, and campaign performance.",
+    },
+    {
+      type: "META_ADS",
+      label: "Meta Ads",
+      available: metaConfigured,
+      description: "Facebook + Instagram ad spend, reach, conversions.",
+      connectPath: metaConfigured ? "/api/data-sources/connect/meta" : undefined,
+    },
+  ];
+}
 
-export function IntegrationsClient({ dataSources, clients }: { dataSources: DataSource[]; clients: Client[] }) {
+export function IntegrationsClient({
+  dataSources,
+  clients,
+  metaConfigured,
+}: {
+  dataSources: DataSource[];
+  clients: Client[];
+  metaConfigured: boolean;
+}) {
+  const AVAILABLE = buildCatalog(metaConfigured);
   const router = useRouter();
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [requested, setRequested] = useState<Record<string, boolean>>({});

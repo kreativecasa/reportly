@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" width="240" height="64" role="img" aria-label="Reportly">
+  <defs>
+    <linearGradient id="reportly-wordmark-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3475EF"/>
+      <stop offset="100%" stop-color="#1E5AE2"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#reportly-wordmark-bg)"/>
+  <text
+    x="32"
+    y="47"
+    text-anchor="middle"
+    font-family="Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
+    font-weight="900"
+    font-size="44"
+    letter-spacing="-2"
+    fill="#ffffff"
+  >R</text>
+  <text
+    x="80"
+    y="44"
+    font-family="Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
+    font-weight="800"
+    font-size="36"
+    letter-spacing="-1.2"
+    fill="currentColor"
+  >Reportly</text>
+</svg>

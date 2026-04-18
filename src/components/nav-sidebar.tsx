@@ -72,8 +72,15 @@ export function NavSidebar({ email, initials }: { email: string; initials: strin
     <aside className="flex flex-col h-full">
       {/* Logo */}
       <div className="px-5 py-6 mb-2">
-        <Link href="/dashboard" className="text-lg font-bold text-white tracking-tight">
-          Reportly
+        <Link href="/dashboard" className="inline-flex items-center gap-2.5 group">
+          <span
+            className="h-8 w-8 rounded-lg flex items-center justify-center text-white font-black text-[18px] tracking-tight shadow-sm"
+            style={{ background: "linear-gradient(135deg, #3475EF 0%, #1E5AE2 100%)" }}
+            aria-hidden
+          >
+            R
+          </span>
+          <span className="text-lg font-extrabold text-white tracking-tight">Reportly</span>
         </Link>
       </div>
 

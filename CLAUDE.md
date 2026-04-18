@@ -6,7 +6,7 @@ A SaaS product that generates AI-written client reports in 60 seconds. Connects 
 ## Stack
 - Next.js 16 App Router + TypeScript strict
 - Tailwind v4 + MDI icons (`@mdi/react` + `@mdi/js`) — **NO emoji anywhere in UI**
-- Prisma + Supabase Postgres (2 migrations applied, DB is live)
+- Prisma + Supabase Postgres (3 migrations applied, DB is live)
 - NextAuth v5 credentials provider only
 - Inngest background jobs (report generation, PDF render, email sends, daily trial-ending cron)
 - Puppeteer + `@sparticuz/chromium` for PDF on Vercel
@@ -15,7 +15,8 @@ A SaaS product that generates AI-written client reports in 60 seconds. Connects 
 - Supabase Storage — bucket `reports` for PDFs
 - Upstash Redis — rate limiting active (env vars set in Vercel)
 - **Gumroad** for payments — NOT Stripe (original plan said Stripe, we switched)
-- Sentry scaffolded (`instrumentation.ts` + `instrumentation-client.ts` + `global-error.tsx`), inert until `SENTRY_DSN` is set
+- Sentry live (EU region `de.sentry.io`, org `reportly-wo`, project `javascript-nextjs`)
+- Integrations live: Google Analytics 4 + Google Search Console. Google Ads + Meta Ads show "Request early access" (intent captured in `IntegrationRequest` table)
 - Vercel Analytics enabled
 
 ## Coding conventions
@@ -56,39 +57,60 @@ A SaaS product that generates AI-written client reports in 60 seconds. Connects 
 - Payment-failed email wired on refund/dispute
 
 ### Hardening (Phase 4 — PR #2, merged)
-- Security headers live on prod: CSP, HSTS (2y preload), X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
-- Rate limits active on Upstash: `generateReport` 5/h/user, `forgotPassword` 3/h/IP, `signup` 5/h/IP, `resetPassword` 5/h/IP, `ga4Finalize` 10/h/user, `gumroadWebhook` 120/min/IP. All call sites degrade gracefully if Redis is unreachable.
-- Sentry scaffolded for Next.js 16 App Router: root `instrumentation.ts` (server, `captureRequestError`), root `instrumentation-client.ts` (replay + `captureRouterTransitionStart`), `src/app/global-error.tsx` boundary. `withSentryConfig` wraps `next.config.ts` only when DSN is set.
+- Security headers live on prod: CSP (broad `*.sentry.io` for EU region), HSTS (2y preload), X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
+- Rate limits active on Upstash: `generateReport` 5/h/user, `forgotPassword` 3/h/IP, `signup` 5/h/IP, `resetPassword` 5/h/IP, `ga4Finalize` 10/h/user (reused for `gsc-finalize`), `gumroadWebhook` 120/min/IP. All call sites degrade gracefully if Redis is unreachable.
+- Sentry live on prod: root `instrumentation.ts` (server, `captureRequestError`), root `instrumentation-client.ts` (replay + `captureRouterTransitionStart`), `src/app/global-error.tsx` boundary, EU-region DSN. Sourcemap upload via `withSentryConfig` + `SENTRY_AUTH_TOKEN`.
+
+### Google Search Console integration (PR #4, merged)
+- Full OAuth flow: `/api/data-sources/connect/gsc` → `/api/data-sources/callback/gsc` → site picker at `/integrations/select-site` → `/api/data-sources/connect/gsc/finalize`
+- `src/lib/gsc.ts` mirrors `ga4.ts`: consent URL, code exchange, site listing, token-refresh accessor, `fetchGSCData()` pulls totals + period-over-period comparison + top queries / pages / countries / devices / daily trend in one Promise.all
+- Claude prompt conditionally emits an `seo` section with clicks+impressions line chart + top queries (with CTR + avg position)
+- Inngest `generate-report` fetches both GA4 and GSC when both are linked
+
+### Early-access request flow (PR #4)
+- Google Ads + Meta Ads cards render "Request early access" instead of a dead "Coming soon" badge
+- Click → `POST /api/integrations/request-access` → upserts into new `IntegrationRequest` table (`workspaceId + type` unique)
+- Button flips to "Requested — we'll email you"
 
 ## What's remaining ⏳
 
-- **Activate Sentry:** create a Sentry project → set `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN` in Vercel. Or run `npx @sentry/wizard@latest -i nextjs` in a clean clone.
-- **Live Gumroad smoke test:** run one real card through the Gumroad product page, verify `subscription.plan=PAID` + invoice row + Manage subscription button. Test cancel → `subscription_ended` ping flips back to FREE.
+- **Live Gumroad smoke test:** run one real card through the Gumroad product page, verify `subscription.plan=PAID` + invoice row + Manage subscription button. Test cancel → `subscription_ended` ping flips back to FREE. *(Gumroad access token was regenerated 2026-04-18; verifySale path confirmed working.)*
 - **Trial-ending cron verification:** seed a TRIALING sub with `trialEnd ~7 days out`, manually invoke the cron in the Inngest dashboard, confirm email lands and `trialEndingNotifiedAt` is set.
-- **Optional:** delete stray Vercel project `hardcore-pike-c5ef54` (empty, no deployments).
+- **When ready to ship Google Ads / Meta Ads:** query `SELECT type, COUNT(*) FROM "IntegrationRequest" GROUP BY type` for demand, then follow the GA4/GSC pattern to build them.
 - **Optional:** address pre-existing `basic-ftp` CVE surfacing via puppeteer chain (`npm audit`).
 
 ## Key files
 ```
-src/app/api/webhooks/gumroad/route.tsx  ← Gumroad webhook handler
-src/app/api/billing/checkout/route.ts   ← Gumroad checkout redirect
-src/app/api/billing/manage/route.ts     ← Subscriber self-management URL
-src/lib/gumroad.ts                      ← Gumroad API wrapper
-src/lib/plan-limits.ts                  ← assertCan* guards + PlanLimitError
-src/lib/claude.ts                       ← AI prompt builder
-src/lib/ga4.ts                          ← GA4 Data API + token refresh
-src/lib/crypto.ts                       ← AES-256 encrypt/decrypt
-src/lib/redis.ts                        ← Upstash ratelimit factory
-src/inngest/generate-report.ts          ← main Inngest job
-src/inngest/generate-pdf.ts             ← Puppeteer PDF job
-src/inngest/trial-ending.tsx            ← daily trial-ending email cron
-src/components/report/report-view.tsx   ← defensive chart renderer
-src/components/upgrade-prompt.tsx       ← 402 → upgrade CTA
-src/emails/                             ← all 8 React Email templates
-instrumentation.ts                      ← Sentry server/edge init (DSN-gated)
-instrumentation-client.ts               ← Sentry browser init (DSN-gated)
-src/app/global-error.tsx                ← App Router top-level error boundary
-next.config.ts                          ← security headers + Sentry wrapper
+src/app/api/webhooks/gumroad/route.tsx                  ← Gumroad webhook handler
+src/app/api/billing/checkout/route.ts                   ← Gumroad checkout redirect
+src/app/api/billing/manage/route.ts                     ← Subscriber self-management URL
+src/app/api/data-sources/connect/ga4/route.ts           ← GA4 OAuth consent
+src/app/api/data-sources/callback/ga4/route.ts          ← GA4 OAuth callback + saveGA4DataSource
+src/app/api/data-sources/connect/ga4/finalize/route.ts  ← GA4 property finalize
+src/app/api/data-sources/connect/gsc/route.ts           ← GSC OAuth consent
+src/app/api/data-sources/callback/gsc/route.ts          ← GSC OAuth callback + saveGSCDataSource
+src/app/api/data-sources/connect/gsc/finalize/route.ts  ← GSC site finalize
+src/app/api/integrations/request-access/route.ts        ← Early-access request handler
+src/lib/gumroad.ts                                      ← Gumroad API wrapper
+src/lib/plan-limits.ts                                  ← assertCan* guards + PlanLimitError
+src/lib/claude.ts                                       ← AI prompt builder (GA4 + GSC aware)
+src/lib/ga4.ts                                          ← GA4 Data API + token refresh
+src/lib/gsc.ts                                          ← Search Console API + token refresh
+src/lib/crypto.ts                                       ← AES-256 encrypt/decrypt
+src/lib/redis.ts                                        ← Upstash ratelimit factory
+src/inngest/generate-report.ts                          ← main Inngest job (GA4 + GSC)
+src/inngest/generate-pdf.ts                             ← Puppeteer PDF job
+src/inngest/trial-ending.tsx                            ← daily trial-ending email cron
+src/components/report/report-view.tsx                   ← defensive chart renderer
+src/components/upgrade-prompt.tsx                       ← 402 → upgrade CTA
+src/app/(app)/integrations/integrations-client.tsx      ← integrations tab UI
+src/app/(app)/integrations/select-property/             ← GA4 property picker
+src/app/(app)/integrations/select-site/                 ← GSC site picker
+src/emails/                                             ← all 8 React Email templates
+instrumentation.ts                                      ← Sentry server/edge init
+instrumentation-client.ts                               ← Sentry browser init
+src/app/global-error.tsx                                ← App Router top-level error boundary
+next.config.ts                                          ← security headers + Sentry wrapper
 ```
 
 ## Environment variables
@@ -115,10 +137,12 @@ NEXT_PUBLIC_APP_URL               # https://www.reportlyapp.me
 PDF_RENDER_SECRET                 # openssl rand -hex 32
 ```
 
-Not yet set (Sentry — optional, app runs fine without):
+Sentry env (also set in production):
 ```
-SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN
-SENTRY_ORG, SENTRY_PROJECT, SENTRY_AUTH_TOKEN
+SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN     # EU region DSN
+SENTRY_ORG                             # reportly-wo
+SENTRY_PROJECT                         # javascript-nextjs
+SENTRY_AUTH_TOKEN                      # org-auth-token for sourcemap upload
 ```
 
 ## Local dev on a new machine

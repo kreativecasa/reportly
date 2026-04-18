@@ -14,11 +14,22 @@ export function redis(): Redis {
   return redisClient;
 }
 
-type LimitKey = "generateReport" | "forgotPassword" | "global";
+type LimitKey =
+  | "generateReport"
+  | "forgotPassword"
+  | "signup"
+  | "resetPassword"
+  | "ga4Finalize"
+  | "gumroadWebhook"
+  | "global";
 
 const limitConfig: Record<LimitKey, { limiter: ReturnType<typeof Ratelimit.slidingWindow>; prefix: string }> = {
   generateReport: { limiter: Ratelimit.slidingWindow(5, "1 h"), prefix: "rl:gen-report" },
   forgotPassword: { limiter: Ratelimit.slidingWindow(3, "1 h"), prefix: "rl:forgot-pw" },
+  signup: { limiter: Ratelimit.slidingWindow(5, "1 h"), prefix: "rl:signup" },
+  resetPassword: { limiter: Ratelimit.slidingWindow(5, "1 h"), prefix: "rl:reset-pw" },
+  ga4Finalize: { limiter: Ratelimit.slidingWindow(10, "1 h"), prefix: "rl:ga4-finalize" },
+  gumroadWebhook: { limiter: Ratelimit.slidingWindow(120, "1 m"), prefix: "rl:gumroad-hook" },
   global: { limiter: Ratelimit.slidingWindow(100, "1 m"), prefix: "rl:global" },
 };
 

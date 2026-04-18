@@ -4,6 +4,7 @@ import { verifySale } from "@/lib/gumroad";
 import { env } from "@/lib/env";
 import { sendEmail } from "@/lib/email";
 import { PaymentFailedEmail } from "@/emails/payment-failed";
+import { ratelimit } from "@/lib/redis";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +70,16 @@ export async function POST(req: NextRequest) {
     if (provided !== expectedSecret) {
       return new Response("Forbidden", { status: 403 });
     }
+  }
+
+  // Defence-in-depth: cap per-IP webhook rate so a leaked secret can't be weaponised into a DoS.
+  // Legit Gumroad retries stay well under 120/min.
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  try {
+    const { success } = await ratelimit("gumroadWebhook").limit(`gumroad:${ip}`);
+    if (!success) return new Response("Too many requests", { status: 429 });
+  } catch {
+    // Redis unavailable — skip rate limiting
   }
 
   let body: ResourcePingBody;

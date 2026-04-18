@@ -2,7 +2,8 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { ok, handleError, ApiError } from "@/lib/api-response";
+import { ok, handleError, ApiError, fail } from "@/lib/api-response";
+import { ratelimit } from "@/lib/redis";
 
 const schema = z.object({
   token: z.string().min(1),
@@ -11,6 +12,14 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    try {
+      const { success } = await ratelimit("resetPassword").limit(`reset:${ip}`);
+      if (!success) return fail("RATE_LIMITED", "Too many reset attempts. Try again in an hour.");
+    } catch {
+      // Redis unavailable — skip rate limiting rather than blocking resets
+    }
+
     const body = await req.json().catch(() => null);
     const { token, password } = schema.parse(body);
 

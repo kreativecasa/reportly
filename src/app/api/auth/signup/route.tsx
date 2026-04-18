@@ -5,7 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/email";
 import { VerifyEmail } from "@/emails/verify-email";
 import { env } from "@/lib/env";
-import { ok, handleError, ApiError } from "@/lib/api-response";
+import { ok, handleError, ApiError, fail } from "@/lib/api-response";
+import { ratelimit } from "@/lib/redis";
 
 const schema = z.object({
   email: z.string().email().max(254),
@@ -17,6 +18,14 @@ const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    try {
+      const { success } = await ratelimit("signup").limit(`signup:${ip}`);
+      if (!success) return fail("RATE_LIMITED", "Too many signup attempts. Try again in an hour.");
+    } catch {
+      // Redis unavailable — skip rate limiting rather than blocking signups
+    }
+
     const body = await req.json().catch(() => null);
     const parsed = schema.parse(body);
     const email = parsed.email.toLowerCase();

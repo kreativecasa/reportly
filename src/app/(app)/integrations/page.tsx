@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { IntegrationsClient } from "./integrations-client";
+import { metaAdsConfigured } from "@/lib/meta-ads";
 import Icon from "@mdi/react";
 import { mdiCheckCircle, mdiInformationOutline } from "@mdi/js";
 
@@ -49,6 +50,30 @@ export default async function IntegrationsPage({
     no_sites: {
       title: "No Search Console sites found",
       body: "The Google account you signed in with has no verified sites in Search Console. Verify a site at https://search.google.com/search-console and try again.",
+    },
+    no_ad_accounts: {
+      title: "No Meta Ads accounts found",
+      body: "The Facebook account you signed in with doesn't have any ad accounts, or didn't grant the ads_read permission. Re-authorize and make sure to allow access to your ad accounts.",
+    },
+    meta_not_configured: {
+      title: "Meta Ads isn't configured yet",
+      body: "The app owner needs to set the META_APP_ID and META_APP_SECRET env vars in Vercel before Meta Ads can be connected.",
+    },
+    meta_token_exchange_failed: {
+      title: "Meta token exchange failed",
+      body: "Double-check the Valid OAuth Redirect URI in your Facebook app matches /api/data-sources/callback/meta exactly.",
+    },
+    meta_long_lived_swap_failed: {
+      title: "Couldn't upgrade Meta access token",
+      body: "Retry the connection. If the problem persists, verify the Facebook App Secret is correct in Vercel.",
+    },
+    meta_api_denied: {
+      title: "Meta denied ads_read access",
+      body: "For users who aren't admins of the Facebook app, ads_read requires App Review. In the meantime, add the Facebook account as a tester under your app's Roles page.",
+    },
+    meta_error: {
+      title: "Meta connection failed",
+      body: "Something went wrong talking to Facebook. Try again; if it keeps happening, contact support.",
     },
     plan_limit: {
       title: "Plan integration limit reached",
@@ -107,6 +132,7 @@ export default async function IntegrationsPage({
           lastSyncedAt: ds.lastSyncedAt?.toISOString() ?? null,
         }))}
         clients={clients}
+        metaConfigured={metaAdsConfigured()}
       />
     </>
   );

@@ -25,6 +25,42 @@ export default async function IntegrationsPage({
 
   const { connected, error } = await searchParams;
 
+  const ERROR_COPY: Record<string, { title: string; body: string }> = {
+    gsc_api_disabled: {
+      title: "Search Console API isn't enabled yet",
+      body: "Go to the Google Cloud project behind your OAuth client and enable the Search Console API, then try again. https://console.cloud.google.com/apis/library/searchconsole.googleapis.com",
+    },
+    ga4_api_disabled: {
+      title: "Google Analytics Admin API isn't enabled yet",
+      body: "Enable it at https://console.cloud.google.com/apis/library/analyticsadmin.googleapis.com and retry.",
+    },
+    access_denied: {
+      title: "Access was denied",
+      body: "You cancelled the Google consent screen. Click Connect to try again.",
+    },
+    expired_state: {
+      title: "This connection request expired",
+      body: "OAuth flows are valid for 10 minutes. Click Connect to start fresh.",
+    },
+    no_properties: {
+      title: "No Analytics properties found",
+      body: "The Google account you signed in with doesn't have any GA4 properties. Try a different account or create a property first.",
+    },
+    no_sites: {
+      title: "No Search Console sites found",
+      body: "The Google account you signed in with has no verified sites in Search Console. Verify a site at https://search.google.com/search-console and try again.",
+    },
+    plan_limit: {
+      title: "Plan integration limit reached",
+      body: "Upgrade your plan to add more data sources.",
+    },
+    rate_limited: {
+      title: "Too many attempts",
+      body: "Slow down a little and try again in a minute.",
+    },
+  };
+  const errCopy = error ? ERROR_COPY[error] : null;
+
   return (
     <>
       <div className="mb-8">
@@ -52,8 +88,11 @@ export default async function IntegrationsPage({
       )}
       {error && (
         <div className="stappli-card p-4 mb-6 border-red-200 bg-red-50">
-          <p className="text-sm text-red-900">
-            Connection failed: <code>{error}</code>
+          <p className="text-sm font-bold text-red-900">
+            {errCopy?.title ?? "Connection failed"}
+          </p>
+          <p className="text-sm text-red-900/90 mt-1 break-words">
+            {errCopy?.body ?? `Error code: ${error}. Try again, or contact support if it keeps happening.`}
           </p>
         </div>
       )}

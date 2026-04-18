@@ -13,6 +13,19 @@ interface OAuthState {
   clientId: string | null;
 }
 
+function classifyGoogleError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (/searchconsole\.googleapis\.com|Search Console API has not been used|disabled/i.test(msg)) {
+    return "gsc_api_disabled";
+  }
+  if (/analyticsadmin|Analytics Admin API has not been used/i.test(msg)) {
+    return "ga4_api_disabled";
+  }
+  if (/invalid_grant|invalid_request/i.test(msg)) return "invalid_auth_code";
+  if (/access_denied/i.test(msg)) return "access_denied";
+  return "google_error";
+}
+
 export async function GET(req: NextRequest) {
   const appUrl = env.core().NEXT_PUBLIC_APP_URL;
   const code = req.nextUrl.searchParams.get("code");
@@ -22,19 +35,30 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.redirect(`${appUrl}/integrations?error=${encodeURIComponent(error)}`);
   if (!code || !state) return NextResponse.redirect(`${appUrl}/integrations?error=missing_params`);
 
-  // The GA4 callback URL is reused for GSC (same Google OAuth client, same whitelisted
-  // redirect). Dispatch by which state-key exists.
-  const gscRaw = await redis().get(`oauth:gsc:${state}`);
-  if (gscRaw) {
-    const gscState: OAuthState = typeof gscRaw === "string" ? JSON.parse(gscRaw) : (gscRaw as OAuthState);
-    await redis().del(`oauth:gsc:${state}`);
-    return handleGscCallback(req, gscState, code);
-  }
+  try {
+    // The GA4 callback URL is reused for GSC. Dispatch by state-key prefix.
+    const gscRaw = await redis().get(`oauth:gsc:${state}`);
+    if (gscRaw) {
+      const gscState: OAuthState = typeof gscRaw === "string" ? JSON.parse(gscRaw) : (gscRaw as OAuthState);
+      await redis().del(`oauth:gsc:${state}`);
+      return await handleGscCallback(gscState, code);
+    }
 
-  const raw = await redis().get(`oauth:ga4:${state}`);
-  if (!raw) return NextResponse.redirect(`${appUrl}/integrations?error=expired_state`);
-  const oauthState: OAuthState = typeof raw === "string" ? JSON.parse(raw) : (raw as OAuthState);
-  await redis().del(`oauth:ga4:${state}`);
+    const raw = await redis().get(`oauth:ga4:${state}`);
+    if (!raw) return NextResponse.redirect(`${appUrl}/integrations?error=expired_state`);
+    const oauthState: OAuthState = typeof raw === "string" ? JSON.parse(raw) : (raw as OAuthState);
+    await redis().del(`oauth:ga4:${state}`);
+
+    return await handleGa4Callback(oauthState, code);
+  } catch (err) {
+    console.error("[oauth-callback] unhandled error:", err);
+    const code = classifyGoogleError(err);
+    return NextResponse.redirect(`${appUrl}/integrations?error=${code}`);
+  }
+}
+
+async function handleGa4Callback(oauthState: OAuthState, code: string) {
+  const appUrl = env.core().NEXT_PUBLIC_APP_URL;
 
   try {
     await assertCanConnectIntegration(oauthState.workspaceId, oauthState.userId);
@@ -51,7 +75,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${appUrl}/integrations?error=no_properties`);
   }
 
-  // Stash tokens + properties for property-selection step
   const stashKey = `oauth:ga4:pending:${oauthState.userId}`;
   await redis().set(
     stashKey,
@@ -67,7 +90,6 @@ export async function GET(req: NextRequest) {
     { ex: 600 },
   );
 
-  // If only one property, auto-select
   if (properties.length === 1) {
     return NextResponse.redirect(
       `${appUrl}/api/data-sources/connect/ga4/finalize?propertyId=${properties[0].propertyId}`,
@@ -75,6 +97,48 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.redirect(`${appUrl}/integrations/select-property`);
+}
+
+async function handleGscCallback(oauthState: OAuthState, code: string) {
+  const appUrl = env.core().NEXT_PUBLIC_APP_URL;
+
+  try {
+    await assertCanConnectIntegration(oauthState.workspaceId, oauthState.userId);
+  } catch {
+    return NextResponse.redirect(`${appUrl}/integrations?error=plan_limit`);
+  }
+
+  const redirectUri = `${appUrl}/api/data-sources/callback/ga4`;
+  const tokens = await exchangeGscCode(redirectUri, code);
+  if (!tokens.access_token) return NextResponse.redirect(`${appUrl}/integrations?error=no_access_token`);
+
+  const sites = await listSites(tokens.access_token);
+  if (sites.length === 0) {
+    return NextResponse.redirect(`${appUrl}/integrations?error=no_sites`);
+  }
+
+  const stashKey = `oauth:gsc:pending:${oauthState.userId}`;
+  await redis().set(
+    stashKey,
+    JSON.stringify({
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token ?? null,
+      expiryDate: tokens.expiry_date ?? null,
+      scopes: (tokens.scope ?? "").split(" ").filter(Boolean),
+      clientId: oauthState.clientId,
+      workspaceId: oauthState.workspaceId,
+      sites,
+    }),
+    { ex: 600 },
+  );
+
+  if (sites.length === 1) {
+    return NextResponse.redirect(
+      `${appUrl}/api/data-sources/connect/gsc/finalize?siteUrl=${encodeURIComponent(sites[0].siteUrl)}`,
+    );
+  }
+
+  return NextResponse.redirect(`${appUrl}/integrations/select-site`);
 }
 
 // Exported helper for finalize route
@@ -133,47 +197,4 @@ export async function saveGA4DataSource(
     },
   });
   return { id: ds.id };
-}
-
-async function handleGscCallback(req: NextRequest, oauthState: OAuthState, code: string) {
-  const appUrl = env.core().NEXT_PUBLIC_APP_URL;
-
-  try {
-    await assertCanConnectIntegration(oauthState.workspaceId, oauthState.userId);
-  } catch {
-    return NextResponse.redirect(`${appUrl}/integrations?error=plan_limit`);
-  }
-
-  // Same redirect URI as the flow started with — the reused GA4 callback path
-  const redirectUri = `${appUrl}/api/data-sources/callback/ga4`;
-  const tokens = await exchangeGscCode(redirectUri, code);
-  if (!tokens.access_token) return NextResponse.redirect(`${appUrl}/integrations?error=no_access_token`);
-
-  const sites = await listSites(tokens.access_token);
-  if (sites.length === 0) {
-    return NextResponse.redirect(`${appUrl}/integrations?error=no_sites`);
-  }
-
-  const stashKey = `oauth:gsc:pending:${oauthState.userId}`;
-  await redis().set(
-    stashKey,
-    JSON.stringify({
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token ?? null,
-      expiryDate: tokens.expiry_date ?? null,
-      scopes: (tokens.scope ?? "").split(" ").filter(Boolean),
-      clientId: oauthState.clientId,
-      workspaceId: oauthState.workspaceId,
-      sites,
-    }),
-    { ex: 600 },
-  );
-
-  if (sites.length === 1) {
-    return NextResponse.redirect(
-      `${appUrl}/api/data-sources/connect/gsc/finalize?siteUrl=${encodeURIComponent(sites[0].siteUrl)}`,
-    );
-  }
-
-  return NextResponse.redirect(`${appUrl}/integrations/select-site`);
 }

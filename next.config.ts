@@ -13,7 +13,7 @@ const CSP = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://analyticsdata.googleapis.com https://oauth2.googleapis.com https://api.gumroad.com https://*.ingest.sentry.io https://*.upstash.io https://vitals.vercel-insights.com",
+  "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://analyticsdata.googleapis.com https://oauth2.googleapis.com https://api.gumroad.com https://*.sentry.io https://*.upstash.io https://vitals.vercel-insights.com",
   "frame-ancestors 'none'",
   "form-action 'self' https://gumroad.com",
   "base-uri 'self'",

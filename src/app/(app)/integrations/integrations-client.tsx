@@ -17,21 +17,69 @@ interface Client {
   name: string;
 }
 
-const AVAILABLE = [
-  { type: "GOOGLE_ANALYTICS_4", label: "Google Analytics 4", available: true, description: "Sessions, users, pages, sources, conversions." },
-  { type: "GOOGLE_ADS", label: "Google Ads", available: false, description: "Coming soon." },
-  { type: "META_ADS", label: "Meta Ads", available: false, description: "Coming soon." },
-  { type: "GOOGLE_SEARCH_CONSOLE", label: "Google Search Console", available: false, description: "Coming soon." },
+type IntegrationType = "GOOGLE_ANALYTICS_4" | "GOOGLE_SEARCH_CONSOLE" | "GOOGLE_ADS" | "META_ADS";
+
+interface IntegrationDef {
+  type: IntegrationType;
+  label: string;
+  available: boolean;
+  description: string;
+  connectPath?: string;
+}
+
+const AVAILABLE: IntegrationDef[] = [
+  {
+    type: "GOOGLE_ANALYTICS_4",
+    label: "Google Analytics 4",
+    available: true,
+    description: "Sessions, users, pages, sources, conversions.",
+    connectPath: "/api/data-sources/connect/ga4",
+  },
+  {
+    type: "GOOGLE_SEARCH_CONSOLE",
+    label: "Google Search Console",
+    available: true,
+    description: "Clicks, impressions, top queries, CTR, and position.",
+    connectPath: "/api/data-sources/connect/gsc",
+  },
+  {
+    type: "GOOGLE_ADS",
+    label: "Google Ads",
+    available: false,
+    description: "Spend, conversions, ROAS, and campaign performance.",
+  },
+  {
+    type: "META_ADS",
+    label: "Meta Ads",
+    available: false,
+    description: "Facebook + Instagram ad spend, reach, conversions.",
+  },
 ];
 
 export function IntegrationsClient({ dataSources, clients }: { dataSources: DataSource[]; clients: Client[] }) {
   const router = useRouter();
   const [selectedClientId, setSelectedClientId] = useState<string>("");
+  const [requested, setRequested] = useState<Record<string, boolean>>({});
+  const [requesting, setRequesting] = useState<string | null>(null);
 
-  function connectGA4() {
+  function connect(integration: IntegrationDef) {
+    if (!integration.connectPath) return;
     const params = new URLSearchParams();
     if (selectedClientId) params.set("clientId", selectedClientId);
-    window.location.href = `/api/data-sources/connect/ga4?${params.toString()}`;
+    window.location.href = `${integration.connectPath}?${params.toString()}`;
+  }
+
+  async function requestEarlyAccess(type: string) {
+    setRequesting(type);
+    const res = await fetch("/api/integrations/request-access", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type }),
+    });
+    setRequesting(null);
+    if (res.ok) {
+      setRequested((p) => ({ ...p, [type]: true }));
+    }
   }
 
   async function disconnect(id: string) {
@@ -39,6 +87,9 @@ export function IntegrationsClient({ dataSources, clients }: { dataSources: Data
     await fetch(`/api/data-sources/${id}`, { method: "DELETE" });
     router.refresh();
   }
+
+  const connectReconnectPath = (type: string) =>
+    AVAILABLE.find((i) => i.type === type)?.connectPath ?? "/api/data-sources/connect/ga4";
 
   return (
     <div className="space-y-8">
@@ -53,12 +104,12 @@ export function IntegrationsClient({ dataSources, clients }: { dataSources: Data
                   <span className="stappli-badge-active">Available</span>
                 ) : (
                   <span className="inline-flex items-center h-5 px-2 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider">
-                    Soon
+                    Early access
                   </span>
                 )}
               </div>
               <p className="text-sm text-[hsl(var(--muted-foreground))] mb-4">{integration.description}</p>
-              {integration.type === "GOOGLE_ANALYTICS_4" && integration.available && (
+              {integration.available ? (
                 <div className="space-y-3">
                   <select
                     value={selectedClientId}
@@ -72,10 +123,22 @@ export function IntegrationsClient({ dataSources, clients }: { dataSources: Data
                       </option>
                     ))}
                   </select>
-                  <button onClick={connectGA4} className="stappli-button-primary w-full">
+                  <button onClick={() => connect(integration)} className="stappli-button-primary w-full">
                     Connect
                   </button>
                 </div>
+              ) : requested[integration.type] ? (
+                <button disabled className="stappli-button-ghost w-full">
+                  Requested — we&apos;ll email you
+                </button>
+              ) : (
+                <button
+                  onClick={() => requestEarlyAccess(integration.type)}
+                  disabled={requesting === integration.type}
+                  className="stappli-button-ghost w-full"
+                >
+                  {requesting === integration.type ? "Saving..." : "Request early access"}
+                </button>
               )}
             </div>
           ))}
@@ -107,7 +170,7 @@ export function IntegrationsClient({ dataSources, clients }: { dataSources: Data
                     <span className="stappli-badge-active">Active</span>
                   ) : (
                     <button
-                      onClick={() => (window.location.href = "/api/data-sources/connect/ga4")}
+                      onClick={() => (window.location.href = connectReconnectPath(ds.type))}
                       className="stappli-button-ghost"
                     >
                       Reconnect

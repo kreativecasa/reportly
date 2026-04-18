@@ -265,6 +265,7 @@ model Subscription {
   cancelledAt            DateTime?
   trialStart             DateTime?
   trialEnd               DateTime?
+  trialEndingNotifiedAt  DateTime?
   createdAt              DateTime           @default(now())
   updatedAt              DateTime           @updatedAt
 

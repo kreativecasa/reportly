@@ -33,7 +33,7 @@ export function BillingActions({ plan, hasSubscription }: { plan: string; hasSub
 
   return (
     <button onClick={subscribe} disabled={loading} className="stappli-button-primary">
-      {loading ? "Loading..." : "Subscribe — $49/mo"}
+      {loading ? "Loading..." : "Subscribe — $8/mo"}
     </button>
   );
 }

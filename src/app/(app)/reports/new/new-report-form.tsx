@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { UpgradePrompt } from "@/components/upgrade-prompt";
 
 interface Client {
   id: string;
@@ -31,6 +32,7 @@ export function NewReportForm({
   const [title, setTitle] = useState("");
   const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [planLimit, setPlanLimit] = useState<{ limit?: string; upgradeUrl?: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const availableSources = useMemo(
@@ -64,6 +66,7 @@ export function NewReportForm({
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setPlanLimit(null);
     const range = computeRange();
     if (!range) {
       setError("Pick a valid date range");
@@ -93,6 +96,10 @@ export function NewReportForm({
     const json = await res.json();
     setLoading(false);
     if (!json.success) {
+      if (json.error?.code === "PLAN_LIMIT") {
+        setPlanLimit(json.error.details ?? { limit: "reports" });
+        return;
+      }
       setError(json.error?.message ?? "Failed to start generation");
       return;
     }
@@ -180,6 +187,7 @@ export function NewReportForm({
         )}
       </Field>
 
+      {planLimit && <UpgradePrompt limit={planLimit.limit} upgradeUrl={planLimit.upgradeUrl} />}
       {error && <p className="text-sm text-[hsl(var(--destructive))]">{error}</p>}
       <button type="submit" disabled={loading || clients.length === 0} className="stappli-button-primary w-full">
         {loading ? "Starting generation..." : "Generate report"}

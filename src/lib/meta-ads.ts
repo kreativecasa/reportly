@@ -24,10 +24,18 @@ export function metaAdsAuthUrl(redirectUri: string, state: string): string {
     client_id: appId,
     redirect_uri: redirectUri,
     state,
-    scope: "ads_read,business_management",
     response_type: "code",
-    auth_type: "rerequest",
   });
+  // Facebook Login for Business apps use a pre-built Configuration (config_id)
+  // instead of raw scopes. Fall back to legacy scope-based flow if no config_id
+  // is set (e.g. for a future classic Facebook Login migration).
+  const configId = process.env.META_CONFIG_ID;
+  if (configId) {
+    params.set("config_id", configId);
+  } else {
+    params.set("scope", "ads_read,business_management");
+    params.set("auth_type", "rerequest");
+  }
   return `${META_OAUTH_URL}?${params.toString()}`;
 }
 

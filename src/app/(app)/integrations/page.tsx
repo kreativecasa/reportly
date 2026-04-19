@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth-guard";
 import { IntegrationsClient } from "./integrations-client";
 import { metaAdsConfigured } from "@/lib/meta-ads";
+import { googleAdsConfigured } from "@/lib/google-ads";
 import Icon from "@mdi/react";
 import { mdiCheckCircle, mdiInformationOutline } from "@mdi/js";
 
@@ -54,6 +55,26 @@ export default async function IntegrationsPage({
     no_ad_accounts: {
       title: "No Meta Ads accounts found",
       body: "The Facebook account you signed in with doesn't have any ad accounts, or didn't grant the ads_read permission. Re-authorize and make sure to allow access to your ad accounts.",
+    },
+    no_ad_customers: {
+      title: "No Google Ads accounts found",
+      body: "The Google account you signed in with doesn't have access to any Google Ads customer. Sign in with the account that has access and retry.",
+    },
+    gads_not_configured: {
+      title: "Google Ads isn't configured yet",
+      body: "The app owner needs to set GOOGLE_ADS_DEVELOPER_TOKEN in Vercel before Google Ads can be connected. Apply for a developer token at https://ads.google.com/home/tools/manager-accounts/",
+    },
+    gads_api_disabled: {
+      title: "Google Ads API isn't enabled",
+      body: "Enable the Google Ads API in your Google Cloud project: https://console.cloud.google.com/apis/library/googleads.googleapis.com and retry.",
+    },
+    gads_dev_token_invalid: {
+      title: "Google Ads developer token is invalid",
+      body: "The configured token was rejected by Google. Check the token is correct in Vercel env and that the token's Manager account has access to the customer you're trying to connect.",
+    },
+    gads_api_error: {
+      title: "Google Ads API returned an error",
+      body: "Something went wrong talking to Google Ads. If it persists, verify your developer token is approved for Basic access (not Test-only).",
     },
     meta_not_configured: {
       title: "Meta Ads isn't configured yet",
@@ -133,6 +154,7 @@ export default async function IntegrationsPage({
         }))}
         clients={clients}
         metaConfigured={metaAdsConfigured()}
+        gadsConfigured={googleAdsConfigured()}
       />
     </>
   );

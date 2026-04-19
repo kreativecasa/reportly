@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { validatePassword } from "@/lib/password";
 
 function ResetForm() {
   const router = useRouter();
@@ -26,6 +27,13 @@ function ResetForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    const pwCheck = validatePassword(password);
+    if (!pwCheck.ok) {
+      setError(pwCheck.message);
+      return;
+    }
+
     setLoading(true);
     const res = await fetch("/api/auth/reset-password", {
       method: "POST",

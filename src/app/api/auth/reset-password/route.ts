@@ -4,10 +4,11 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { ok, handleError, ApiError, fail } from "@/lib/api-response";
 import { ratelimit } from "@/lib/redis";
+import { passwordSchema } from "@/lib/password";
 
 const schema = z.object({
   token: z.string().min(1),
-  password: z.string().min(8).max(128),
+  password: passwordSchema,
 });
 
 export async function POST(req: NextRequest) {

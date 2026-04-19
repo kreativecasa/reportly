@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Icon from "@mdi/react";
 import { mdiCheckCircle } from "@mdi/js";
+import { validatePassword } from "@/lib/password";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -21,6 +22,13 @@ export default function SignupPage() {
     e.preventDefault();
     setError(null);
     setDevVerifyUrl(null);
+
+    const pwCheck = validatePassword(password);
+    if (!pwCheck.ok) {
+      setError(pwCheck.message);
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await fetch("/api/auth/signup", {

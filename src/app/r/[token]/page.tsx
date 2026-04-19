@@ -1,9 +1,28 @@
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { ReportView, type ReportSection } from "@/components/report/report-view";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const { token } = await params;
+  const report = await prisma.report.findUnique({
+    where: { clientViewToken: token },
+    include: { client: true, workspace: true },
+  });
+  if (!report) return { title: "Report not found" };
+  const title = `${report.title} · ${report.workspace.name}`;
+  const description = `${report.client.name} performance report · ${format(report.dateRangeStart, "MMM d, yyyy")} – ${format(report.dateRangeEnd, "MMM d, yyyy")}`;
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: "article" },
+    twitter: { card: "summary_large_image", title, description },
+    robots: { index: false, follow: false }, // share links shouldn't be indexed
+  };
+}
 
 export default async function PublicReportPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;

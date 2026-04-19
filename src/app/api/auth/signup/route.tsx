@@ -7,10 +7,11 @@ import { VerifyEmail } from "@/emails/verify-email";
 import { env } from "@/lib/env";
 import { ok, handleError, ApiError, fail } from "@/lib/api-response";
 import { ratelimit } from "@/lib/redis";
+import { passwordSchema } from "@/lib/password";
 
 const schema = z.object({
   email: z.string().email().max(254),
-  password: z.string().min(8).max(128),
+  password: passwordSchema,
   name: z.string().min(1).max(80).optional(),
 });
 

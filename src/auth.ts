@@ -6,10 +6,11 @@ import { z } from "zod";
 import { prisma } from "./lib/prisma";
 import { authConfig } from "./auth.config";
 import type { SubscriptionPlan } from "@prisma/client";
+import { passwordSchema } from "./lib/password";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8).max(128),
+  password: passwordSchema,
 });
 
 export const { handlers, signIn, signOut, auth } = NextAuth({

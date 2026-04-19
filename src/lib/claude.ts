@@ -3,6 +3,7 @@ import { env } from "./env";
 import type { GA4Data } from "./ga4";
 import type { GSCData } from "./gsc";
 import type { MetaAdsData } from "./meta-ads";
+import type { GoogleAdsData } from "./google-ads";
 
 let client: Anthropic | null = null;
 
@@ -44,6 +45,7 @@ interface GenerateInput {
   ga4?: GA4Data;
   gsc?: GSCData;
   metaAds?: MetaAdsData;
+  googleAds?: GoogleAdsData;
 }
 
 function summarizeGA4ForPrompt(data: GA4Data) {
@@ -78,14 +80,24 @@ function summarizeMetaForPrompt(data: MetaAdsData) {
   };
 }
 
+function summarizeGoogleAdsForPrompt(data: GoogleAdsData) {
+  return {
+    totals: data.totals,
+    previousPeriod: data.comparison,
+    topCampaigns: data.topCampaigns.slice(0, 10),
+    dailyTrendSample: data.dailyTrend.slice(0, 30),
+  };
+}
+
 function buildUserPrompt(input: GenerateInput): string {
   const fmt = (d: Date) => d.toISOString().slice(0, 10);
   const ga4Block = input.ga4 ? JSON.stringify(summarizeGA4ForPrompt(input.ga4), null, 2) : "No GA4 data connected.";
   const gscBlock = input.gsc ? JSON.stringify(summarizeGSCForPrompt(input.gsc), null, 2) : "No Search Console data connected.";
   const metaBlock = input.metaAds ? JSON.stringify(summarizeMetaForPrompt(input.metaAds), null, 2) : "No Meta Ads data connected.";
+  const gadsBlock = input.googleAds ? JSON.stringify(summarizeGoogleAdsForPrompt(input.googleAds), null, 2) : "No Google Ads data connected.";
 
   const hasSeo = Boolean(input.gsc);
-  const hasPaid = Boolean(input.metaAds);
+  const hasPaid = Boolean(input.metaAds || input.googleAds);
   const nextSectionNumber = (() => {
     let n = 4; // up to "conversions"
     return () => ++n;
@@ -106,13 +118,16 @@ ${gscBlock}
 META ADS DATA:
 ${metaBlock}
 
+GOOGLE ADS DATA:
+${gadsBlock}
+
 SECTIONS TO GENERATE (as a JSON array in this exact order):
 1. overview — Executive summary (1-2 paragraphs) + 4 top-level metrics (sessions, users, conversions, bounce rate)
 2. traffic — Traffic breakdown with narrative + top sources + line chart of dailyTrend (xKey:"date", yKey:["sessions","users"])
 3. engagement — Top pages, engagement metrics, narrative
 4. conversions — Conversion performance, trends, and recommendations${hasSeo ? `
 ${nextSectionNumber()}. seo — SEO performance from Search Console: clicks + impressions trend, top queries (with CTR and average position), content opportunities. Include chartData of dailyTrend (xKey:"date", yKey:["clicks","impressions"]).` : ""}${hasPaid ? `
-${nextSectionNumber()}. paid — Meta Ads performance: total spend, ROAS (conversions / spend), CTR, top campaigns by spend, waste flags. Include chartData of dailyTrend (xKey:"date", yKey:["spend","clicks"]). Currency: ${input.metaAds?.totals.currency ?? "USD"}.` : ""}
+${nextSectionNumber()}. paid — Paid advertising performance: combine Meta and/or Google Ads into a single narrative. Report total spend (${input.googleAds ? `Google Ads: ${input.googleAds.totals.currency} ${input.googleAds.totals.spend.toFixed(2)}` : ""}${input.googleAds && input.metaAds ? " + " : ""}${input.metaAds ? `Meta Ads: ${input.metaAds.totals.currency} ${input.metaAds.totals.spend.toFixed(2)}` : ""}), blended ROAS, CTR, top campaigns by spend, and waste flags. Include chartData of combined daily trend (xKey:"date", yKey:["spend","clicks"]).` : ""}
 
 FORMAT (return ONLY this JSON shape — no markdown, no code fences):
 {
@@ -191,16 +206,21 @@ export async function generateReportSections(input: GenerateInput): Promise<Repo
       };
     }
   }
-  if (input.metaAds) {
+  if (input.metaAds || input.googleAds) {
     const paid = sections.find((s) => s.type === "paid");
     if (paid && !paid.chartData) {
+      // Merge Meta + Google Ads daily spend into one chart by date
+      const merged = new Map<string, { date: string; spend: number; clicks: number }>();
+      const add = (date: string, spend: number, clicks: number) => {
+        const prev = merged.get(date) ?? { date, spend: 0, clicks: 0 };
+        merged.set(date, { date, spend: prev.spend + spend, clicks: prev.clicks + clicks });
+      };
+      input.metaAds?.dailyTrend.forEach((d) => add(d.date, d.spend, d.clicks));
+      input.googleAds?.dailyTrend.forEach((d) => add(d.date, d.spend, d.clicks));
+      const sorted = Array.from(merged.values()).sort((a, b) => a.date.localeCompare(b.date));
       paid.chartData = {
         type: "line",
-        data: input.metaAds.dailyTrend.map((d) => ({
-          date: d.date,
-          spend: d.spend,
-          clicks: d.clicks,
-        })),
+        data: sorted,
         xKey: "date",
         yKey: ["spend", "clicks"],
       };

@@ -27,7 +27,7 @@ interface IntegrationDef {
   connectPath?: string;
 }
 
-function buildCatalog(metaConfigured: boolean): IntegrationDef[] {
+function buildCatalog(metaConfigured: boolean, gadsConfigured: boolean): IntegrationDef[] {
   return [
     {
       type: "GOOGLE_ANALYTICS_4",
@@ -46,8 +46,9 @@ function buildCatalog(metaConfigured: boolean): IntegrationDef[] {
     {
       type: "GOOGLE_ADS",
       label: "Google Ads",
-      available: false,
-      description: "Spend, conversions, ROAS, and campaign performance.",
+      available: gadsConfigured,
+      description: "Spend, conversions, ROAS, and top campaigns.",
+      connectPath: gadsConfigured ? "/api/data-sources/connect/google-ads" : undefined,
     },
     {
       type: "META_ADS",
@@ -63,12 +64,14 @@ export function IntegrationsClient({
   dataSources,
   clients,
   metaConfigured,
+  gadsConfigured,
 }: {
   dataSources: DataSource[];
   clients: Client[];
   metaConfigured: boolean;
+  gadsConfigured: boolean;
 }) {
-  const AVAILABLE = buildCatalog(metaConfigured);
+  const AVAILABLE = buildCatalog(metaConfigured, gadsConfigured);
   const router = useRouter();
   const [selectedClientId, setSelectedClientId] = useState<string>("");
   const [requested, setRequested] = useState<Record<string, boolean>>({});

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { exchangeCode, listProperties } from "@/lib/ga4";
 import { exchangeGscCode, listSites } from "@/lib/gsc";
+import { exchangeGoogleAdsCode, listAccessibleCustomers } from "@/lib/google-ads";
 import { env } from "@/lib/env";
 import { redis } from "@/lib/redis";
 import { encrypt } from "@/lib/crypto";
@@ -21,6 +22,9 @@ function classifyGoogleError(err: unknown): string {
   if (/analyticsadmin|Analytics Admin API has not been used/i.test(msg)) {
     return "ga4_api_disabled";
   }
+  if (/googleads\.googleapis\.com|Google Ads API has not been used/i.test(msg)) return "gads_api_disabled";
+  if (/developer.?token|DEVELOPER_TOKEN/i.test(msg)) return "gads_dev_token_invalid";
+  if (/gads_list_failed|gads_query_failed/i.test(msg)) return "gads_api_error";
   if (/invalid_grant|invalid_request/i.test(msg)) return "invalid_auth_code";
   if (/access_denied/i.test(msg)) return "access_denied";
   return "google_error";
@@ -36,12 +40,19 @@ export async function GET(req: NextRequest) {
   if (!code || !state) return NextResponse.redirect(`${appUrl}/integrations?error=missing_params`);
 
   try {
-    // The GA4 callback URL is reused for GSC. Dispatch by state-key prefix.
+    // The GA4 callback URL is reused for GSC and Google Ads. Dispatch by state-key prefix.
     const gscRaw = await redis().get(`oauth:gsc:${state}`);
     if (gscRaw) {
       const gscState: OAuthState = typeof gscRaw === "string" ? JSON.parse(gscRaw) : (gscRaw as OAuthState);
       await redis().del(`oauth:gsc:${state}`);
       return await handleGscCallback(gscState, code);
+    }
+
+    const gadsRaw = await redis().get(`oauth:gads:${state}`);
+    if (gadsRaw) {
+      const gadsState: OAuthState = typeof gadsRaw === "string" ? JSON.parse(gadsRaw) : (gadsRaw as OAuthState);
+      await redis().del(`oauth:gads:${state}`);
+      return await handleGoogleAdsCallback(gadsState, code);
     }
 
     const raw = await redis().get(`oauth:ga4:${state}`);
@@ -97,6 +108,50 @@ async function handleGa4Callback(oauthState: OAuthState, code: string) {
   }
 
   return NextResponse.redirect(`${appUrl}/integrations/select-property`);
+}
+
+async function handleGoogleAdsCallback(oauthState: OAuthState, code: string) {
+  const appUrl = env.core().NEXT_PUBLIC_APP_URL;
+
+  try {
+    await assertCanConnectIntegration(oauthState.workspaceId, oauthState.userId);
+  } catch {
+    return NextResponse.redirect(`${appUrl}/integrations?error=plan_limit`);
+  }
+
+  const redirectUri = `${appUrl}/api/data-sources/callback/ga4`;
+  const tokens = await exchangeGoogleAdsCode(redirectUri, code);
+  if (!tokens.access_token) return NextResponse.redirect(`${appUrl}/integrations?error=no_access_token`);
+
+  const customers = await listAccessibleCustomers(tokens.access_token);
+  if (customers.length === 0) {
+    return NextResponse.redirect(`${appUrl}/integrations?error=no_ad_customers`);
+  }
+
+  const stashKey = `oauth:gads:pending:${oauthState.userId}`;
+  await redis().set(
+    stashKey,
+    JSON.stringify({
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token ?? null,
+      expiryDate: tokens.expiry_date ?? null,
+      scopes: (tokens.scope ?? "").split(" ").filter(Boolean),
+      clientId: oauthState.clientId,
+      workspaceId: oauthState.workspaceId,
+      customers,
+    }),
+    { ex: 600 },
+  );
+
+  // Filter managers out of the auto-select (agencies will want a specific client account)
+  const nonManagers = customers.filter((c) => !c.isManager);
+  if (nonManagers.length === 1) {
+    return NextResponse.redirect(
+      `${appUrl}/api/data-sources/connect/google-ads/finalize?customerId=${encodeURIComponent(nonManagers[0].customerId)}`,
+    );
+  }
+
+  return NextResponse.redirect(`${appUrl}/integrations/select-ad-customer`);
 }
 
 async function handleGscCallback(oauthState: OAuthState, code: string) {

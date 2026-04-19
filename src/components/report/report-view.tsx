@@ -124,7 +124,9 @@ function Section({ section, brandColor }: { section: ReportSection; brandColor: 
         </div>
       )}
 
-      {section.chartData && <Chart config={section.chartData} brandColor={brandColor} />}
+      {section.chartData && Array.isArray(section.chartData.data) && section.chartData.data.length > 0 && (
+        <Chart config={section.chartData} brandColor={brandColor} />
+      )}
 
       {insights.length > 0 && (
         <div className="mt-6 space-y-2">

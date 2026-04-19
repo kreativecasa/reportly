@@ -16,8 +16,8 @@ interface Limits {
 }
 
 const LIMITS: Record<SubscriptionPlan, Limits> = {
-  FREE: { clients: 1, reportsPerMonth: 3, integrations: 1 },
-  PAID: { clients: 3, reportsPerMonth: 15, integrations: 2 },
+  FREE: { clients: 1, reportsPerMonth: 3, integrations: 2 },
+  PAID: { clients: 3, reportsPerMonth: 15, integrations: 5 },
 };
 
 function effectivePlan(plan: SubscriptionPlan, trialEnd: Date | null): SubscriptionPlan {

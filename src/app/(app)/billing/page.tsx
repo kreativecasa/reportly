@@ -52,7 +52,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
                 Renews {format(sub.currentPeriodEnd, "MMM d, yyyy")}
               </p>
             )}
-            {sub?.status === "PAST_DUE" && (
+            {(sub?.status === "PAST_DUE" || sub?.status === "UNPAID") && (
               <p className="text-sm text-[hsl(var(--destructive))] mt-1">
                 Payment failed — please update your payment method.
               </p>

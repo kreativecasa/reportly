@@ -48,25 +48,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user?.id) {
         token.uid = user.id;
       }
-      if (token.uid && (!token.plan || !token.emailVerifiedAt)) {
+      if (token.uid) {
+        // Always refresh plan so Gumroad payment events propagate to the session
+        // without requiring the user to log out and back in.
         const sub = await prisma.subscription.findUnique({
           where: { userId: token.uid as string },
           select: { plan: true, trialEnd: true },
         });
-        const workspace = await prisma.workspace.findUnique({
-          where: { ownerId: token.uid as string },
-          select: { id: true, onboardingCompleted: true },
-        });
-        const userRecord = await prisma.user.findUnique({
-          where: { id: token.uid as string },
-          select: { emailVerified: true, role: true },
-        });
         token.plan = sub?.plan ?? "FREE";
         token.trialEnd = sub?.trialEnd?.toISOString() ?? null;
-        token.workspaceId = workspace?.id ?? null;
-        token.onboardingCompleted = workspace?.onboardingCompleted ?? false;
-        token.emailVerifiedAt = userRecord?.emailVerified?.toISOString() ?? null;
-        token.role = userRecord?.role ?? "USER";
+
+        // Only re-query workspace/user when not yet cached — these are one-time events.
+        if (!token.workspaceId || !token.emailVerifiedAt) {
+          const [workspace, userRecord] = await Promise.all([
+            prisma.workspace.findUnique({
+              where: { ownerId: token.uid as string },
+              select: { id: true, onboardingCompleted: true },
+            }),
+            prisma.user.findUnique({
+              where: { id: token.uid as string },
+              select: { emailVerified: true, role: true },
+            }),
+          ]);
+          token.workspaceId = workspace?.id ?? null;
+          token.onboardingCompleted = workspace?.onboardingCompleted ?? false;
+          token.emailVerifiedAt = userRecord?.emailVerified?.toISOString() ?? null;
+          token.role = userRecord?.role ?? "USER";
+        }
       }
       return token;
     },

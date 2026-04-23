@@ -1,7 +1,7 @@
 # Reportly — Project Context for Claude
 
 ## What this is
-A SaaS product that generates AI-written client reports in 60 seconds. Connects to Google Analytics 4, uses Claude AI to write the narrative, exports branded PDFs, and delivers via share link or email. Live at **https://www.reportlyapp.me**. Repo: `https://github.com/kreativecasa/reportly.git`
+A SaaS product that generates AI-written client reports in 60 seconds. Connects to Google Analytics 4, uses Claude AI to write the narrative, exports branded PDFs, and delivers via share link or email. Live at **https://www.reportlyapps.com**. Repo: `https://github.com/kreativecasa/reportly.git`
 
 ## Stack
 - Next.js 16 App Router + TypeScript strict
@@ -11,7 +11,7 @@ A SaaS product that generates AI-written client reports in 60 seconds. Connects 
 - Inngest background jobs (report generation, PDF render, email sends, daily trial-ending cron)
 - Puppeteer + `@sparticuz/chromium` for PDF on Vercel
 - Anthropic SDK — model `claude-sonnet-4-5`
-- Resend — transactional email, domain `reportlyapp.me` verified in GoDaddy DNS, `FROM_EMAIL` live
+- Resend — transactional email, domain `reportlyapps.com` verified in GoDaddy DNS, `FROM_EMAIL` live
 - Supabase Storage — bucket `reports` for PDFs
 - Upstash Redis — rate limiting active (env vars set in Vercel)
 - **Gumroad** for payments — NOT Stripe (original plan said Stripe, we switched)
@@ -49,7 +49,7 @@ A SaaS product that generates AI-written client reports in 60 seconds. Connects 
 
 ### Payments (Phase 3 — PR #1, merged)
 - Gumroad webhook handles sale / cancellation / refund / dispute / subscription_* with API-based sale verification + idempotency via `GumroadEvent`
-  - Webhook URL: `https://www.reportlyapp.me/api/webhooks/gumroad?secret=9066daeaabafbe6bb9e71771d30208d17e0d1a81263c6f48`
+  - Webhook URL: `https://www.reportlyapps.com/api/webhooks/gumroad?secret=9066daeaabafbe6bb9e71771d30208d17e0d1a81263c6f48`
 - `/api/billing/checkout` + `/api/billing/manage` wired; `billing-actions.tsx` renders Subscribe → Gumroad or Manage → Gumroad subscriber portal
 - `assertCanAddClient` / `assertCanGenerateReport` / `assertCanConnectIntegration` enforced at every create endpoint
 - `UpgradePrompt` component renders on 402 responses in the new-client and new-report forms
@@ -127,13 +127,13 @@ ANTHROPIC_MODEL                   # claude-sonnet-4-5
 GUMROAD_ACCESS_TOKEN, GUMROAD_PRODUCT_URL
 GUMROAD_WEBHOOK_SECRET            # 9066daeaabafbe6bb9e71771d30208d17e0d1a81263c6f48
 RESEND_API_KEY
-FROM_EMAIL                        # noreply@reportlyapp.me
+FROM_EMAIL                        # noreply@reportlyapps.com
 FROM_NAME                         # Reportly
 SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY
 SUPABASE_STORAGE_BUCKET           # reports
 UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
 INNGEST_EVENT_KEY, INNGEST_SIGNING_KEY
-NEXT_PUBLIC_APP_URL               # https://www.reportlyapp.me
+NEXT_PUBLIC_APP_URL               # https://www.reportlyapps.com
 PDF_RENDER_SECRET                 # openssl rand -hex 32
 ```
 

@@ -6,10 +6,10 @@ export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "How Reportly collects, uses, stores, and protects your data when you generate AI-written marketing reports.",
-  alternates: { canonical: "https://www.reportlyapp.me/privacy" },
+  alternates: { canonical: "https://www.reportlyapps.com/privacy" },
 };
 
-const LAST_UPDATED = "April 18, 2026";
+const LAST_UPDATED = "April 23, 2026";
 
 export default function PrivacyPage() {
   return (
@@ -37,7 +37,7 @@ export default function PrivacyPage() {
             <p>
               This Privacy Policy describes how Reportly (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;) collects, uses,
               stores, and shares information when you use the Reportly service at{" "}
-              <span className="font-medium">reportlyapp.me</span> (the &quot;Service&quot;). By using the Service you agree
+              <span className="font-medium">reportlyapps.com</span> (the &quot;Service&quot;). By using the Service you agree
               to the handling of information as described here.
             </p>
           </section>
@@ -47,8 +47,8 @@ export default function PrivacyPage() {
             Reportly is a software-as-a-service product that helps agencies and freelancers generate AI-written marketing
             reports for their clients. The Service is operated by Kreative Casa Entertainment (the &quot;Operator&quot;),
             based in the United Arab Emirates. For privacy questions contact{" "}
-            <a href="mailto:support@reportlyapp.me" className="text-[hsl(var(--primary))] underline">
-              support@reportlyapp.me
+            <a href="mailto:support@reportlyapps.com" className="text-[hsl(var(--primary))] underline">
+              support@reportlyapps.com
             </a>
             .
           </p>
@@ -139,13 +139,97 @@ export default function PrivacyPage() {
             </li>
           </List>
 
-          <H2>5. Where data is stored</H2>
+          <H2>5. Google API Services — Limited Use disclosure</H2>
+          <p>
+            When you connect a Google integration (Google Analytics 4, Google Search Console, or Google Ads), Reportly
+            requests OAuth access to specific Google API scopes. The specific scopes we request and what each is used
+            for are:
+          </p>
+          <List>
+            <li>
+              <b>Google Analytics 4</b> — scope <code>.../auth/analytics.readonly</code>. Used only to list the GA4
+              properties you own and pull the metrics for the date range you pick (sessions, users, pageviews, sources,
+              events, conversions) so we can include them in the report you are generating. We do not modify any data
+              in your Analytics account.
+            </li>
+            <li>
+              <b>Google Search Console</b> — scope <code>.../auth/webmasters.readonly</code>. Used only to list the
+              verified sites on your Google account and pull search-performance metrics (clicks, impressions, top
+              queries, pages, countries, devices) for the date range you pick.
+            </li>
+            <li>
+              <b>Google Ads</b> — scope <code>.../auth/adwords</code>. Used only to list the ad accounts accessible to
+              your Google login and pull campaign performance metrics (spend, clicks, impressions, conversions) for the
+              date range you pick.
+            </li>
+            <li>
+              <b>Basic profile</b> — scopes <code>openid</code>, <code>email</code>, <code>profile</code> when you use
+              &ldquo;Sign in with Google&rdquo;. Used only to identify your Reportly account.
+            </li>
+          </List>
+          <p>
+            <b>
+              Reportly&apos;s use and transfer of information received from Google APIs to any other app will adhere
+              to the{" "}
+              <a
+                href="https://developers.google.com/terms/api-services-user-data-policy"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[hsl(var(--primary))] underline"
+              >
+                Google API Services User Data Policy
+              </a>
+              , including the Limited Use requirements.
+            </b>
+          </p>
+          <p>
+            This means, specifically:
+          </p>
+          <List>
+            <li>
+              We only use Google user data to provide and improve user-facing features of Reportly — namely, generating
+              the marketing reports you ask us to generate.
+            </li>
+            <li>
+              We do <b>not</b> transfer Google user data to third parties except as needed to provide the Service (e.g.
+              we send metric values, never OAuth tokens, to Anthropic&apos;s Claude API to compose the report narrative,
+              and we store encrypted tokens in Supabase and transient rate-limit data in Upstash as listed in Section
+              4).
+            </li>
+            <li>
+              We do <b>not</b> use Google user data for advertising, to build profiles, or to resell to data brokers.
+            </li>
+            <li>
+              We do <b>not</b> allow humans to read your Google user data except: (a) with your explicit consent to
+              resolve a specific support issue, (b) when required for security investigations or to comply with
+              applicable law, or (c) when the data has been aggregated and is used for internal operations, in
+              accordance with the Limited Use policy.
+            </li>
+            <li>
+              We do <b>not</b> use your Google user data to train generalized machine-learning models.
+            </li>
+          </List>
+          <p>
+            You can revoke Reportly&apos;s access to your Google account at any time by visiting{" "}
+            <a
+              href="https://myaccount.google.com/permissions"
+              target="_blank"
+              rel="noreferrer"
+              className="text-[hsl(var(--primary))] underline"
+            >
+              myaccount.google.com/permissions
+            </a>{" "}
+            and removing Reportly, or by clicking <b>Remove</b> next to the integration on the Integrations page inside
+            Reportly (which both revokes the token with Google and deletes the stored token from our database).
+          </p>
+
+          <H2>6. Where data is stored</H2>
           <p>
             Application data is stored in Supabase&apos;s AWS ap-northeast-1 (Tokyo) region. Some sub-processors
             (Anthropic, Vercel, Sentry) may process data in the United States or the European Union.
           </p>
 
-          <H2>6. Retention</H2>
+          <H2>7. Retention</H2>
           <List>
             <li>Account, workspace, and client data are retained while your account is active.</li>
             <li>
@@ -162,7 +246,7 @@ export default function PrivacyPage() {
             </li>
           </List>
 
-          <H2>7. Your rights</H2>
+          <H2>8. Your rights</H2>
           <p>
             You can at any time:
           </p>
@@ -186,7 +270,7 @@ export default function PrivacyPage() {
             processing and the right to lodge a complaint with a supervisory authority.
           </p>
 
-          <H2>8. Security</H2>
+          <H2>9. Security</H2>
           <List>
             <li>Passwords are hashed with bcrypt (cost factor 12).</li>
             <li>OAuth access and refresh tokens are encrypted at rest with AES-256.</li>
@@ -197,28 +281,28 @@ export default function PrivacyPage() {
           </List>
           <p>
             No system is perfectly secure. If you discover a vulnerability please email{" "}
-            <a href="mailto:support@reportlyapp.me" className="text-[hsl(var(--primary))] underline">
-              support@reportlyapp.me
+            <a href="mailto:support@reportlyapps.com" className="text-[hsl(var(--primary))] underline">
+              support@reportlyapps.com
             </a>
             .
           </p>
 
-          <H2>9. Children</H2>
+          <H2>10. Children</H2>
           <p>
             Reportly is not directed to children under 16. If you believe a child has provided data to Reportly, contact
             us and we will delete it.
           </p>
 
-          <H2>10. Changes to this policy</H2>
+          <H2>11. Changes to this policy</H2>
           <p>
             We may update this policy occasionally. When we do, we will change the &quot;Last updated&quot; date above
             and, for material changes, notify active users by email.
           </p>
 
-          <H2>11. Contact</H2>
+          <H2>12. Contact</H2>
           <p>
-            <a href="mailto:support@reportlyapp.me" className="text-[hsl(var(--primary))] underline">
-              support@reportlyapp.me
+            <a href="mailto:support@reportlyapps.com" className="text-[hsl(var(--primary))] underline">
+              support@reportlyapps.com
             </a>
           </p>
         </div>

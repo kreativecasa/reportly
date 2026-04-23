@@ -19,6 +19,18 @@ interface Client {
 
 type IntegrationType = "GOOGLE_ANALYTICS_4" | "GOOGLE_SEARCH_CONSOLE" | "GOOGLE_ADS" | "META_ADS";
 
+// Google OAuth scopes are presented as individual checkboxes on the consent
+// screen. If the user doesn't tick the one for this integration's data, the
+// callback silently fails with `google_error`. Show a reminder on these cards.
+const NEEDS_SCOPE_CHECKBOX_HINT: Partial<Record<IntegrationType, string>> = {
+  GOOGLE_ANALYTICS_4:
+    "On the Google consent screen, tick “See and download your Google Analytics data” or the connection will fail.",
+  GOOGLE_SEARCH_CONSOLE:
+    "On the Google consent screen, tick “View Search Console data for your verified sites” or the connection will fail.",
+  GOOGLE_ADS:
+    "On the Google consent screen, tick the Google Ads permission or the connection will fail.",
+};
+
 interface IntegrationDef {
   type: IntegrationType;
   label: string;
@@ -138,6 +150,14 @@ export function IntegrationsClient({
                       </option>
                     ))}
                   </select>
+                  {NEEDS_SCOPE_CHECKBOX_HINT[integration.type] && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                      <span className="font-bold uppercase tracking-wider text-[10px] mr-1">
+                        Important
+                      </span>
+                      {NEEDS_SCOPE_CHECKBOX_HINT[integration.type]}
+                    </div>
+                  )}
                   <button onClick={() => connect(integration)} className="stappli-button-primary w-full">
                     Connect
                   </button>

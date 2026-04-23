@@ -47,9 +47,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
             {/* Right: help + sign out. Identity is shown in the sidebar on desktop; mobile keeps a compact avatar below. */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <a
-                href="mailto:support@reportlyapp.me"
+                href="mailto:support@reportlyapps.com"
                 className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition px-3 py-1.5 rounded-lg hover:bg-[hsl(var(--muted))]"
-                title="Need help? Email support@reportlyapp.me"
+                title="Need help? Email support@reportlyapps.com"
               >
                 <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" />

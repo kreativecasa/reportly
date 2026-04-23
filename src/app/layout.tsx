@@ -10,7 +10,7 @@ const inter = Inter({
   display: "swap",
 });
 
-const APP_URL = "https://www.reportlyapp.me";
+const APP_URL = "https://www.reportlyapps.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),

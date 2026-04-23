@@ -39,6 +39,26 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Permanent redirects from the decommissioned reportlyapp.me domain to the
+  // production reportlyapps.com domain. Preserves path + query for SEO continuity.
+  // Requires the old domain to still be claimed on this Vercel project OR at least
+  // DNS-pointed here so requests reach us to be 301'd.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.reportlyapp.me" }],
+        destination: "https://www.reportlyapps.com/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "reportlyapp.me" }],
+        destination: "https://www.reportlyapps.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 // Only wrap in Sentry when configured — keeps dev builds fast when no DSN is set.

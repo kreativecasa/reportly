@@ -98,7 +98,7 @@ export default async function OgImage() {
               letterSpacing: "0.02em",
             }}
           >
-            reportlyapp.me
+            reportlyapps.com
           </div>
           <div
             style={{

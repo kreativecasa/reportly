@@ -5,7 +5,7 @@ import { Brand } from "@/components/brand";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description: "The terms that govern your use of Reportly.",
-  alternates: { canonical: "https://www.reportlyapp.me/terms" },
+  alternates: { canonical: "https://www.reportlyapps.com/terms" },
 };
 
 const LAST_UPDATED = "April 18, 2026";
@@ -35,7 +35,7 @@ export default function TermsPage() {
           <section>
             <p>
               These Terms of Service (the &quot;Terms&quot;) govern your use of the Reportly service available at{" "}
-              <span className="font-medium">reportlyapp.me</span> (the &quot;Service&quot;), operated by Kreative Casa
+              <span className="font-medium">reportlyapps.com</span> (the &quot;Service&quot;), operated by Kreative Casa
               Entertainment (the &quot;Operator&quot;, &quot;we&quot;, &quot;us&quot;). By creating an account or using
               the Service you agree to these Terms. If you do not agree, do not use the Service.
             </p>
@@ -58,7 +58,7 @@ export default function TermsPage() {
           <H2>3. Your account</H2>
           <List>
             <li>You are responsible for keeping your password confidential and for all activity under your account.</li>
-            <li>Notify us immediately at support@reportlyapp.me if you suspect unauthorized access.</li>
+            <li>Notify us immediately at support@reportlyapps.com if you suspect unauthorized access.</li>
             <li>One person should use one account; do not share logins.</li>
           </List>
 
@@ -195,8 +195,8 @@ export default function TermsPage() {
 
           <H2>17. Contact</H2>
           <p>
-            <a href="mailto:support@reportlyapp.me" className="text-[hsl(var(--primary))] underline">
-              support@reportlyapp.me
+            <a href="mailto:support@reportlyapps.com" className="text-[hsl(var(--primary))] underline">
+              support@reportlyapps.com
             </a>
           </p>
         </div>

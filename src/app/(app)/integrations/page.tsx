@@ -104,6 +104,18 @@ export default async function IntegrationsPage({
       title: "Too many attempts",
       body: "Slow down a little and try again in a minute.",
     },
+    scope_missing: {
+      title: "You didn't tick the permission checkbox",
+      body: "On the Google consent screen, you need to tick the checkbox that gives Reportly access to your data before clicking Continue. Click Connect to try again — there's a single checkbox, make sure it's ticked.",
+    },
+    google_error: {
+      title: "Google rejected the connection",
+      body: "Most often this means you didn't tick the permission checkbox on the Google consent screen. Click Connect again and make sure you tick the box that grants Reportly access to your data before clicking Continue.",
+    },
+    invalid_auth_code: {
+      title: "Google auth code was invalid",
+      body: "The one-time code from Google expired or was already used. Click Connect again to start fresh.",
+    },
   };
   const errCopy = error ? ERROR_COPY[error] : null;
 

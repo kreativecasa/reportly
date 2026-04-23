@@ -3,6 +3,6 @@ import type { MetadataRoute } from "next";
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [{ userAgent: "*", allow: "/", disallow: ["/api/", "/dashboard", "/reports", "/clients", "/settings", "/billing", "/onboarding", "/report-render/"] }],
-    sitemap: "https://www.reportlyapp.me/sitemap.xml",
+    sitemap: "https://www.reportlyapps.com/sitemap.xml",
   };
 }

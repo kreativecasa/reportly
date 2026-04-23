@@ -124,7 +124,7 @@ export function NavSidebar({ email, initials }: { email: string; initials: strin
       {/* Help link */}
       <div className="px-4 pb-3">
         <a
-          href="mailto:support@reportlyapp.me"
+          href="mailto:support@reportlyapps.com"
           className="flex items-center gap-2 text-xs text-white/50 hover:text-white/80 transition"
         >
           <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">

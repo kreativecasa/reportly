@@ -16,6 +16,7 @@ interface OAuthState {
 
 function classifyGoogleError(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);
+  if (/scope_missing/i.test(msg)) return "scope_missing";
   if (/searchconsole\.googleapis\.com|Search Console API has not been used|disabled/i.test(msg)) {
     return "gsc_api_disabled";
   }
@@ -28,6 +29,13 @@ function classifyGoogleError(err: unknown): string {
   if (/invalid_grant|invalid_request/i.test(msg)) return "invalid_auth_code";
   if (/access_denied/i.test(msg)) return "access_denied";
   return "google_error";
+}
+
+function requireScope(tokens: { scope?: string | null }, required: string): void {
+  const granted = (tokens.scope ?? "").split(/\s+/).filter(Boolean);
+  if (!granted.includes(required)) {
+    throw new Error(`scope_missing: ${required}`);
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -80,6 +88,7 @@ async function handleGa4Callback(oauthState: OAuthState, code: string) {
   const redirectUri = `${appUrl}/api/data-sources/callback/ga4`;
   const tokens = await exchangeCode(redirectUri, code);
   if (!tokens.access_token) return NextResponse.redirect(`${appUrl}/integrations?error=no_access_token`);
+  requireScope(tokens, "https://www.googleapis.com/auth/analytics.readonly");
 
   const properties = await listProperties(tokens.access_token);
   if (properties.length === 0) {
@@ -122,6 +131,7 @@ async function handleGoogleAdsCallback(oauthState: OAuthState, code: string) {
   const redirectUri = `${appUrl}/api/data-sources/callback/ga4`;
   const tokens = await exchangeGoogleAdsCode(redirectUri, code);
   if (!tokens.access_token) return NextResponse.redirect(`${appUrl}/integrations?error=no_access_token`);
+  requireScope(tokens, "https://www.googleapis.com/auth/adwords");
 
   const customers = await listAccessibleCustomers(tokens.access_token);
   if (customers.length === 0) {
@@ -166,6 +176,7 @@ async function handleGscCallback(oauthState: OAuthState, code: string) {
   const redirectUri = `${appUrl}/api/data-sources/callback/ga4`;
   const tokens = await exchangeGscCode(redirectUri, code);
   if (!tokens.access_token) return NextResponse.redirect(`${appUrl}/integrations?error=no_access_token`);
+  requireScope(tokens, "https://www.googleapis.com/auth/webmasters.readonly");
 
   const sites = await listSites(tokens.access_token);
   if (sites.length === 0) {

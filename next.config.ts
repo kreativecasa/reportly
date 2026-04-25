@@ -31,6 +31,18 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["puppeteer-core", "@sparticuz/chromium"],
+  // The @sparticuz/chromium brotli binaries (chromium.br, fonts.tar.br, etc.) are
+  // resolved at runtime via fs paths, not via `import`/`require`, so Next.js's
+  // file tracer doesn't pick them up by default. Without this they're missing
+  // from the deployed Vercel function bundle and Puppeteer fails with:
+  //   "The input directory '/var/task/node_modules/@sparticuz/chromium/bin'
+  //    does not exist."
+  // The PDF render runs inside the Inngest serve handler (/api/inngest).
+  outputFileTracingIncludes: {
+    "/api/inngest": [
+      "./node_modules/@sparticuz/chromium/bin/**",
+    ],
+  },
   async headers() {
     return [
       {
